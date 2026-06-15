@@ -1,0 +1,1930 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
+<title>CarePath – Smart Hospital System · Bangalore</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+:root{
+  --blue:#2563eb;--blue-d:#1d4ed8;--blue-l:#eff6ff;--blue-m:#bfdbfe;
+  --green:#16a34a;--green-l:#f0fdf4;--green-m:#bbf7d0;
+  --red:#dc2626;--red-l:#fef2f2;--red-m:#fca5a5;
+  --yellow:#d97706;--yellow-l:#fffbeb;--yellow-m:#fcd34d;
+  --purple:#7c3aed;--purple-l:#f5f3ff;--purple-m:#ddd6fe;
+  --orange:#ea580c;--orange-l:#fff7ed;
+  --white:#fff;--gray-50:#f8fafc;--gray-100:#f1f5f9;
+  --gray-200:#e2e8f0;--gray-300:#cbd5e1;--gray-400:#94a3b8;
+  --gray-500:#64748b;--gray-600:#475569;--gray-700:#334155;
+  --gray-800:#1e293b;--gray-900:#0f172a;
+  --shadow:0 2px 16px rgba(37,99,235,.08);
+  --shadow-md:0 8px 32px rgba(37,99,235,.14);
+  --shadow-lg:0 20px 60px rgba(37,99,235,.18);
+  --r:18px;--r-sm:10px;--r-xs:7px;
+  --font:'Inter',system-ui,sans-serif;
+  --font-h:'Sora',system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth}
+body{font-family:var(--font);background:var(--gray-50);color:var(--gray-800);min-height:100vh;overflow-x:hidden}
+
+/* SPLASH */
+#splash{position:fixed;inset:0;z-index:9999;background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 50%,#0f172a 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:opacity .8s,transform .8s}
+#splash.out{opacity:0;transform:scale(1.06);pointer-events:none}
+.sp-icon{font-size:72px;animation:hb 1.8s ease-in-out infinite;margin-bottom:20px}
+@keyframes hb{0%,100%{transform:scale(1)}14%{transform:scale(1.15)}28%{transform:scale(1)}42%{transform:scale(1.1)}}
+.sp-title{font-family:var(--font-h);font-size:clamp(42px,10vw,72px);font-weight:800;background:linear-gradient(135deg,#60a5fa,#3b82f6,#818cf8,#60a5fa);background-size:300%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:sh 3s ease infinite}
+@keyframes sh{0%{background-position:0%}50%{background-position:100%}100%{background-position:0%}}
+.sp-sub{color:rgba(148,163,184,.7);font-size:13px;letter-spacing:3px;text-transform:uppercase;margin-top:10px}
+.sp-bar{position:absolute;bottom:48px;width:180px;height:2px;background:rgba(255,255,255,.1);border-radius:2px;overflow:hidden}
+.sp-fill{height:100%;background:linear-gradient(90deg,var(--blue),#818cf8);width:0;animation:fi 3.2s .4s ease-in-out forwards}
+@keyframes fi{to{width:100%}}
+.sp-hint{position:absolute;bottom:66px;font-size:11px;color:rgba(255,255,255,.25);letter-spacing:2px;text-transform:uppercase}
+
+/* SCREENS */
+.screen{display:none}
+.screen.on{display:block}
+
+/* LOGIN */
+.login-bg{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#0f172a,#1e3a5f);padding:20px}
+.login-card{background:var(--white);border-radius:24px;padding:36px 28px;width:100%;max-width:430px;box-shadow:var(--shadow-lg)}
+.login-logo{text-align:center;margin-bottom:28px}
+.login-logo .ll-ic{font-size:3rem}
+.login-logo h2{font-family:var(--font-h);font-size:1.6rem;font-weight:800;color:var(--blue);margin-top:6px}
+.login-logo p{font-size:.82rem;color:var(--gray-400);margin-top:4px}
+.role-tabs{display:flex;background:var(--gray-100);border-radius:12px;padding:4px;margin-bottom:22px;gap:4px}
+.rtab{flex:1;padding:10px;border-radius:9px;border:none;background:none;font-size:.88rem;font-weight:600;cursor:pointer;font-family:var(--font);color:var(--gray-500);transition:.2s}
+.rtab.on{background:var(--white);color:var(--blue);box-shadow:0 2px 8px rgba(37,99,235,.12)}
+.clinic-badge{display:inline-flex;align-items:center;gap:8px;background:var(--blue-l);border:1.5px solid var(--blue-m);border-radius:12px;padding:10px 14px;font-size:.82rem;color:var(--blue);margin-bottom:16px;width:100%}
+
+/* TOP NAV */
+.topnav{position:sticky;top:0;z-index:500;background:rgba(255,255,255,.96);backdrop-filter:blur(20px);border-bottom:1px solid var(--gray-200);height:62px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;box-shadow:0 1px 8px rgba(37,99,235,.06)}
+.tnav-logo{font-family:var(--font-h);font-weight:800;font-size:1.15rem;color:var(--blue);display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none}
+.tnav-right{display:flex;align-items:center;gap:8px}
+.tnav-user{display:flex;align-items:center;gap:7px;font-size:.83rem;font-weight:600;color:var(--gray-600);padding:6px 12px;border-radius:var(--r-sm);border:1.5px solid var(--gray-200);cursor:default;max-width:160px;overflow:hidden}
+.tnav-user span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* BOTTOM NAV */
+.botnav{position:fixed;bottom:0;left:0;right:0;z-index:500;background:rgba(255,255,255,.96);backdrop-filter:blur(20px);border-top:1px solid var(--gray-200);display:flex;align-items:center;justify-content:space-around;padding:8px 4px calc(8px + env(safe-area-inset-bottom));box-shadow:0 -4px 20px rgba(37,99,235,.07)}
+.bnav{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 10px;border-radius:14px;border:none;background:none;cursor:pointer;color:var(--gray-400);font-size:10px;font-weight:500;font-family:var(--font);transition:.25s;min-width:54px;position:relative}
+.bnav .bic{font-size:21px;transition:.25s}
+.bnav.on{color:var(--blue)}
+.bnav.on .bic{transform:translateY(-3px) scale(1.1)}
+.bnav-dot{position:absolute;top:2px;right:10px;width:8px;height:8px;border-radius:50%;background:var(--red);border:2px solid #fff;display:none}
+
+/* PAGES */
+.page{display:none;min-height:calc(100vh - 62px);padding-bottom:84px;animation:pgIn .35s cubic-bezier(.4,0,.2,1)}
+.page.on{display:block}
+@keyframes pgIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+
+/* LAYOUT */
+.wrap{max-width:720px;margin:0 auto;padding:20px 14px 32px}
+
+/* CARDS */
+.card{background:var(--white);border-radius:var(--r);box-shadow:var(--shadow);padding:20px;margin-bottom:14px}
+.card-sm{background:var(--white);border-radius:var(--r-sm);box-shadow:var(--shadow);padding:14px;margin-bottom:10px}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:11px 20px;border-radius:var(--r-sm);font-size:.91rem;font-weight:600;cursor:pointer;border:none;transition:.18s;font-family:var(--font);white-space:nowrap;text-decoration:none}
+.btn:active{transform:scale(.97)}
+.btn-blue{background:var(--blue);color:#fff}
+.btn-blue:hover{background:var(--blue-d);box-shadow:0 4px 14px rgba(37,99,235,.3)}
+.btn-green{background:var(--green);color:#fff}
+.btn-green:hover{background:#15803d}
+.btn-red{background:var(--red);color:#fff}
+.btn-red:hover{background:#b91c1c}
+.btn-ghost{background:var(--blue-l);color:var(--blue)}
+.btn-ghost:hover{background:var(--blue-m)}
+.btn-outline{background:transparent;color:var(--blue);border:2px solid var(--blue)}
+.btn-outline:hover{background:var(--blue-l)}
+.btn-gray{background:var(--gray-100);color:var(--gray-600)}
+.btn-gray:hover{background:var(--gray-200)}
+.btn-yw{background:var(--yellow-l);color:var(--yellow)}
+.btn-yw:hover{background:var(--yellow-m)}
+.btn-full{width:100%}
+.btn-sm{padding:7px 13px;font-size:.8rem;border-radius:8px}
+.btn-lg{padding:14px 26px;font-size:1rem;border-radius:14px}
+
+/* FORMS */
+.fg{margin-bottom:15px}
+label{display:block;font-size:.83rem;font-weight:600;color:var(--gray-600);margin-bottom:5px}
+input,textarea,select{width:100%;padding:11px 13px;border:1.5px solid var(--gray-200);border-radius:var(--r-sm);font-size:.91rem;color:var(--gray-800);background:var(--white);transition:.18s;outline:none;font-family:var(--font)}
+input:focus,textarea:focus,select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+.err{font-size:.77rem;color:var(--red);margin-top:4px;display:none}
+.err.on{display:block}
+.hint{font-size:.77rem;color:var(--gray-400);margin-top:4px}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;gap:3px;padding:3px 9px;border-radius:20px;font-size:.73rem;font-weight:700}
+.b-red{background:var(--red-l);color:var(--red)}
+.b-yellow{background:var(--yellow-l);color:var(--yellow)}
+.b-green{background:var(--green-l);color:var(--green)}
+.b-blue{background:var(--blue-l);color:var(--blue)}
+.b-purple{background:var(--purple-l);color:var(--purple)}
+.b-orange{background:var(--orange-l);color:var(--orange)}
+.b-gray{background:var(--gray-100);color:var(--gray-600)}
+
+/* SECTION HEADER */
+.sh{margin-bottom:18px}
+.sh-t{font-family:var(--font-h);font-size:1.25rem;font-weight:800;color:var(--gray-900)}
+.sh-s{font-size:.85rem;color:var(--gray-400);margin-top:3px}
+
+/* HERO */
+.hero{background:linear-gradient(135deg,#0f172a,#1e3a5f,#1e293b);border-radius:var(--r);padding:32px 24px;color:#fff;margin-bottom:18px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-60px;right:-60px;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(59,130,246,.2),transparent 70%);pointer-events:none}
+.hero-inner{position:relative;z-index:1}
+.hero h1{font-family:var(--font-h);font-size:clamp(1.4rem,5vw,2rem);font-weight:800;margin-bottom:6px}
+.hero p{color:rgba(255,255,255,.7);font-size:.88rem;line-height:1.65;margin-bottom:20px;max-width:460px}
+
+/* STAT GRID */
+.sg{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+.sb{background:var(--white);border-radius:var(--r-sm);box-shadow:var(--shadow);padding:14px;text-align:center}
+.sv{font-family:var(--font-h);font-size:1.6rem;font-weight:800;color:var(--blue)}
+.sl{font-size:.7rem;color:var(--gray-400);margin-top:2px;font-weight:500}
+
+/* CHIPS */
+.chips{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px}
+.chip{padding:6px 13px;border-radius:20px;font-size:.78rem;font-weight:600;cursor:pointer;border:1.5px solid var(--gray-200);background:var(--white);color:var(--gray-600);transition:.15s;white-space:nowrap;font-family:var(--font)}
+.chip:hover,.chip.on{background:var(--blue);color:#fff;border-color:var(--blue)}
+
+/* SEARCH */
+.sw{position:relative;margin-bottom:12px}
+.sw input{padding-left:40px}
+.sic{position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:.95rem;color:var(--gray-400);pointer-events:none}
+
+/* HOSPITAL CARD */
+.hcard{background:var(--white);border-radius:var(--r);box-shadow:var(--shadow);padding:15px 16px;margin-bottom:11px;cursor:pointer;border:2px solid transparent;transition:.2s;display:flex;align-items:flex-start;gap:13px}
+.hcard:hover{border-color:var(--blue-m);box-shadow:var(--shadow-md);transform:translateY(-2px)}
+.hcard.sel{border-color:var(--blue);background:var(--blue-l)}
+.hic{font-size:2rem;flex-shrink:0;margin-top:2px}
+.hbody{flex:1;min-width:0}
+.hname{font-weight:700;font-size:.95rem;color:var(--gray-900)}
+.hmeta{font-size:.76rem;color:var(--gray-400);margin-top:2px}
+.hbadges{display:flex;gap:5px;flex-wrap:wrap;margin-top:7px}
+.hright{display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0}
+.hdist{font-size:.8rem;font-weight:700;color:var(--blue)}
+.traf-dot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:3px}
+.tl{background:var(--green)}.tm{background:var(--yellow)}.th{background:var(--red)}
+
+/* MAP */
+#hosp-map{border-radius:var(--r);overflow:hidden;height:260px;margin-bottom:14px;box-shadow:var(--shadow)}
+
+/* TOKEN DISPLAY */
+.tok-big{background:linear-gradient(135deg,var(--blue),#818cf8);border-radius:var(--r);padding:30px;text-align:center;color:#fff;margin-bottom:16px}
+.tok-n{font-family:var(--font-h);font-size:3.8rem;font-weight:900;letter-spacing:6px}
+.tok-l{font-size:.85rem;opacity:.8;margin-top:5px}
+
+/* INFO ROWS */
+.ir{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--gray-100)}
+.ir:last-child{border-bottom:none}
+.il{font-size:.82rem;color:var(--gray-400)}
+.iv{font-size:.89rem;font-weight:600;color:var(--gray-800);text-align:right;max-width:58%}
+
+/* QUEUE */
+.ns{background:linear-gradient(135deg,var(--green),#15803d);border-radius:var(--r);padding:18px;text-align:center;color:#fff;margin-bottom:14px}
+.ns-n{font-family:var(--font-h);font-size:2.6rem;font-weight:900;letter-spacing:4px}
+.pw{background:var(--gray-200);border-radius:99px;height:10px;overflow:hidden}
+.pb{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--blue),var(--green));transition:width .8s cubic-bezier(.4,0,.2,1)}
+
+/* QUEUE ROW */
+.qr{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--gray-100)}
+.qr:last-child{border-bottom:none}
+
+/* STEPS */
+.steps{display:flex;align-items:center;justify-content:center;margin-bottom:22px}
+.sdot{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;background:var(--gray-200);color:var(--gray-400);transition:.3s;flex-shrink:0}
+.sdot.done{background:var(--green);color:#fff}
+.sdot.act{background:var(--blue);color:#fff;box-shadow:0 0 0 4px var(--blue-m)}
+.sline{width:26px;height:2px;background:var(--gray-200);flex-shrink:0}
+.sline.done{background:var(--green)}
+
+/* VOICE */
+.vbtn{display:inline-flex;align-items:center;gap:7px;padding:9px 16px;border-radius:var(--r-sm);background:var(--green-l);color:var(--green);border:1.5px solid var(--green-m);font-size:.86rem;font-weight:600;cursor:pointer;transition:.18s;font-family:var(--font)}
+.vbtn:hover{background:var(--green-m)}
+.vbtn.rec{background:var(--red-l);color:var(--red);border-color:var(--red-m);animation:pu 1s infinite}
+@keyframes pu{0%,100%{opacity:1}50%{opacity:.55}}
+
+/* AI RESULT */
+.ai-card{border-radius:var(--r);padding:20px;margin-bottom:12px;animation:fadeIn .4s ease}
+.ai-em{background:var(--red-l);border:2px solid var(--red-m)}
+.ai-md{background:var(--yellow-l);border:2px solid var(--yellow-m)}
+.ai-nm{background:var(--green-l);border:2px solid var(--green-m)}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+/* ADMIN TABLE */
+.tbl{width:100%;border-collapse:collapse}
+.tbl th{text-align:left;font-size:.73rem;font-weight:700;color:var(--gray-400);padding:9px 11px;border-bottom:2px solid var(--gray-200);text-transform:uppercase;letter-spacing:.04em}
+.tbl td{padding:11px 11px;border-bottom:1px solid var(--gray-100);font-size:.85rem;vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:var(--gray-50)}
+
+/* ARRIVAL CARD */
+.arr-card{background:linear-gradient(135deg,var(--blue-l),var(--green-l));border-radius:var(--r);padding:26px;text-align:center;margin-bottom:16px}
+.arr-t{font-family:var(--font-h);font-size:2.8rem;font-weight:900;color:var(--blue)}
+
+/* APPROACHING */
+.appr{background:var(--yellow-l);border:1.5px solid var(--yellow-m);border-radius:var(--r-sm);padding:13px 15px;font-size:.86rem;color:#92400e;font-weight:500;text-align:center;margin-top:11px}
+
+/* MODAL */
+.mbg{position:fixed;inset:0;z-index:800;background:rgba(0,0,0,.5);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:20px}
+.mbg.hide{display:none}
+.mbox{background:var(--white);border-radius:24px;padding:26px;width:100%;max-width:460px;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-lg);animation:su .3s cubic-bezier(.4,0,.2,1)}
+@keyframes su{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+
+/* TOAST */
+#toast{position:fixed;bottom:82px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--gray-900);color:#fff;padding:11px 22px;border-radius:99px;font-size:.86rem;font-weight:500;z-index:9999;transition:transform .3s;pointer-events:none;white-space:nowrap;box-shadow:var(--shadow-md)}
+#toast.on{transform:translateX(-50%) translateY(0)}
+
+/* FAMILY MEMBER CARD */
+.fmc{background:var(--white);border-radius:var(--r-sm);box-shadow:var(--shadow);padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:12px;cursor:pointer;border:2px solid transparent;transition:.18s}
+.fmc:hover{border-color:var(--blue-m)}
+.fmc.sel{border-color:var(--blue);background:var(--blue-l)}
+.fmc-av{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--blue),#818cf8);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;color:#fff;font-weight:700}
+
+/* CLINIC VERIFIED BADGE */
+.cv-badge{display:flex;align-items:center;gap:8px;background:var(--green-l);border:1.5px solid var(--green-m);border-radius:10px;padding:10px 14px;font-size:.82rem;color:var(--green);font-weight:600;margin-bottom:16px}
+
+/* RESPONSIVE */
+@media(max-width:600px){
+  .hero{padding:22px 16px}
+  .hero h1{font-size:1.4rem}
+  .sg{gap:8px}
+  .sv{font-size:1.3rem}
+  .tok-n{font-size:2.8rem}
+  .tbl th:nth-child(4),.tbl td:nth-child(4){display:none}
+  .wrap{padding:14px 10px 32px}
+}
+@media(max-width:360px){
+  .tnav-logo span:last-child{display:none}
+}
+</style>
+
+<!-- ══════ SPLASH ══════ -->
+<div id="splash" onclick="dismissSplash()">
+  <div class="sp-icon">🏥</div>
+  <div class="sp-title">CarePath</div>
+  <div class="sp-sub">Smart Hospital · Bangalore</div>
+  <div class="sp-hint">Tap anywhere to begin</div>
+  <div class="sp-bar"><div class="sp-fill"></div></div>
+</div>
+
+<!-- ══════ LOGIN SCREEN ══════ -->
+<div class="screen" id="scr-login">
+  <div class="login-bg">
+    <div class="login-card">
+      <div class="login-logo">
+        <div class="ll-ic">🏥</div>
+        <h2>CarePath</h2>
+        <p>Smart Hospital Queue · Bangalore</p>
+      </div>
+
+      <div class="role-tabs">
+        <button class="rtab on" id="rtab-p" onclick="switchRole('patient')">🧑 Patient</button>
+        <button class="rtab" id="rtab-c" onclick="switchRole('clinic')">🩺 Clinic Head</button>
+      </div>
+
+      <!-- Patient form -->
+      <div id="frm-patient">
+        <div class="fg">
+          <label>Full Name *</label>
+          <input id="li-name" type="text" placeholder="Your full name" autocomplete="name"/>
+          <div class="err" id="e-liname">Please enter your name</div>
+        </div>
+        <div class="fg">
+          <label>Phone Number *</label>
+          <input id="li-phone" type="tel" placeholder="10-digit mobile" maxlength="10" inputmode="numeric"/>
+          <div class="err" id="e-liphone">Enter a valid 10-digit number</div>
+        </div>
+        <div class="fg">
+          <label>Age (optional)</label>
+          <input id="li-age" type="number" placeholder="Age" min="0" max="120"/>
+        </div>
+        <button class="btn btn-blue btn-full btn-lg" onclick="loginPatient()">Continue as Patient →</button>
+        <p class="hint" style="text-align:center;margin-top:12px">One account works for your entire family</p>
+      </div>
+
+      <!-- Clinic form -->
+      <div id="frm-clinic" style="display:none">
+        <div class="clinic-badge">
+          🔐 Clinic access is verified against our registered hospital list
+        </div>
+        <div class="fg">
+          <label>Registered Clinic Name *</label>
+          <select id="li-clinic-sel">
+            <option value="">— Select your hospital —</option>
+          </select>
+          <div class="err" id="e-liclsel">Please select your hospital</div>
+        </div>
+        <div class="fg">
+          <label>Clinic Access Code *</label>
+          <input id="li-code" type="password" placeholder="Unique access code"/>
+          <div class="err" id="e-licode">Incorrect access code</div>
+          <div class="hint">Each clinic has a unique code provided during registration</div>
+        </div>
+        <button class="btn btn-blue btn-full btn-lg" onclick="loginClinic()">Login as Clinic Head →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ MAIN APP ══════ -->
+<div class="screen" id="scr-app">
+
+  <!-- TOP NAV -->
+  <nav class="topnav">
+    <div class="tnav-logo" onclick="goHome()"><span>🏥</span><span>CarePath</span></div>
+    <div class="tnav-right">
+      <div class="tnav-user">
+        <span id="tnav-ic">🧑</span>
+        <span id="tnav-name">User</span>
+      </div>
+      <button class="btn btn-sm btn-gray" onclick="logout()">Logout</button>
+    </div>
+  </nav>
+
+  <!-- BOTTOM NAV -->
+  <div class="botnav" id="botnav">
+    <button class="bnav on" id="bn-home"      onclick="showPage('pg-home')"><span class="bic">🏠</span><span>Home</span></button>
+    <button class="bnav"    id="bn-hospitals" onclick="showPage('pg-hospitals')"><span class="bic">📍</span><span>Hospitals</span></button>
+    <button class="bnav"    id="bn-bookings"  onclick="showPage('pg-bookings')"><span class="bic">🎫</span><span>Bookings</span><span class="bnav-dot" id="bd-dot"></span></button>
+    <button class="bnav"    id="bn-queue"     onclick="showPage('pg-queue')"><span class="bic">📋</span><span>Queue</span></button>
+    <button class="bnav"    id="bn-admin"     onclick="showPage('pg-admin')" style="display:none"><span class="bic">📊</span><span>Dashboard</span></button>
+  </div>
+
+  <div id="toast"></div>
+
+
+<!-- ══════════════════════════════════════
+     PAGE: HOME (Patient)
+══════════════════════════════════════ -->
+<div class="page" id="pg-home">
+  <div class="wrap">
+    <div class="hero">
+      <div class="hero-inner">
+        <h1>👋 Welcome, <span id="h-username">Patient</span></h1>
+        <p>Find hospitals near you, get AI-based triage, book tokens for your family and arrive exactly on time.</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn btn-blue" onclick="showPage('pg-hospitals')">📍 Find Hospitals</button>
+          <button class="btn btn-outline" style="color:#fff;border-color:rgba(255,255,255,.4)" onclick="showPage('pg-symptoms')">🩺 Check Symptoms</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Active booking summary -->
+    <div id="home-active-booking" style="display:none">
+      <div class="card" style="background:var(--blue-l);border:1.5px solid var(--blue-m)">
+        <div style="font-weight:700;font-size:.95rem;margin-bottom:10px">🎫 Your Active Booking</div>
+        <div id="home-booking-summary"></div>
+        <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+          <button class="btn btn-blue btn-sm" onclick="showPage('pg-queue')">📋 Track Queue</button>
+          <button class="btn btn-ghost btn-sm" onclick="showPage('pg-bookings')">All Bookings</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="sg">
+      <div class="sb"><div class="sv">24</div><div class="sl">Hospitals</div></div>
+      <div class="sb"><div class="sv" id="h-fam-count" style="color:var(--purple)">0</div><div class="sl">Family Members</div></div>
+      <div class="sb"><div class="sv" id="h-book-count" style="color:var(--green)">0</div><div class="sl">Bookings Today</div></div>
+    </div>
+
+    <!-- Location status -->
+    <div class="card" id="loc-card" style="background:var(--blue-l);border:1.5px solid var(--blue-m);padding:16px">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="font-size:1.8rem" id="loc-ico">📍</div>
+        <div style="flex:1">
+          <div style="font-weight:700;font-size:.92rem" id="loc-title">Enable Live Location</div>
+          <div style="font-size:.8rem;color:var(--gray-500)" id="loc-desc">Allow to show hospitals near you with traffic-aware routing</div>
+        </div>
+        <button class="btn btn-blue btn-sm" id="loc-btn" onclick="requestLocation()">Allow</button>
+      </div>
+    </div>
+
+    <!-- Family quick add -->
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+        <div style="font-weight:700">👨‍👩‍👧 Family Members</div>
+        <button class="btn btn-ghost btn-sm" onclick="openAddMember()">+ Add Member</button>
+      </div>
+      <div id="fam-list-home">
+        <div style="font-size:.84rem;color:var(--gray-400);text-align:center;padding:10px">No family members added yet. Add them to book appointments on their behalf.</div>
+      </div>
+    </div>
+
+    <div class="card" style="background:linear-gradient(135deg,var(--orange-l),var(--yellow-l));border:1.5px solid var(--yellow-m)">
+      <div style="display:flex;gap:14px;align-items:center">
+        <div style="font-size:1.8rem">🚦</div>
+        <div>
+          <div style="font-weight:700;margin-bottom:3px">Bangalore Traffic Aware</div>
+          <div style="font-size:.81rem;color:var(--gray-600)">Routes account for Silk Board, ORR, MG Road, Hebbal & Whitefield congestion. Peak hour (8–10am, 5–8pm) ETAs automatically adjusted.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="background:linear-gradient(135deg,var(--red-l),#fce7e7);border:1.5px solid var(--red-m)">
+      <div style="display:flex;gap:14px;align-items:center">
+        <div style="font-size:1.8rem">🆘</div>
+        <div style="flex:1">
+          <div style="font-weight:700;margin-bottom:3px">Emergency?</div>
+          <div style="font-size:.81rem;color:var(--gray-600);margin-bottom:10px">Call 108 for ambulance or find the nearest emergency ward now.</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <a href="tel:108" class="btn btn-red btn-sm">📞 Call 108</a>
+            <button class="btn btn-gray btn-sm" onclick="openEmergencyMap()">🗺 Emergency Map</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ HOME (Clinic Head) ══════ -->
+<div class="page" id="pg-home-clinic">
+  <div class="wrap">
+    <div class="hero">
+      <div class="hero-inner">
+        <h1>🏥 <span id="ch-clinic-name">Clinic Dashboard</span></h1>
+        <p>Manage your hospital queue, call next patients, and monitor today's appointments.</p>
+        <button class="btn btn-blue" onclick="showPage('pg-admin')">Open Full Dashboard →</button>
+      </div>
+    </div>
+    <div class="sg">
+      <div class="sb"><div class="sv" id="ch-total" style="color:var(--blue)">0</div><div class="sl">Total Today</div></div>
+      <div class="sb"><div class="sv" id="ch-serving" style="color:var(--green)">—</div><div class="sl">Now Serving</div></div>
+      <div class="sb"><div class="sv" id="ch-rem" style="color:var(--red)">0</div><div class="sl">Remaining</div></div>
+    </div>
+    <div class="card" style="background:var(--green-l);border:1.5px solid var(--green-m)">
+      <div class="cv-badge">✅ Verified Clinic Head · Access limited to your hospital only</div>
+      <button class="btn btn-green btn-full" onclick="nextPatient()">▶ Call Next Patient</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════
+     PAGE: HOSPITALS
+══════════════════════════════════════ -->
+<div class="page" id="pg-hospitals">
+  <div class="wrap">
+    <div class="sh">
+      <div class="sh-t">Find a Hospital</div>
+      <div class="sh-s" id="loc-sub">Showing all hospitals · Allow location for distance sorting</div>
+    </div>
+
+    <div id="hosp-map"></div>
+
+    <div class="sw"><span class="sic">🔍</span><input type="text" id="hs-search" placeholder="Search hospital, area or speciality…" oninput="renderHospitals()"/></div>
+
+    <div class="chips" id="spec-chips">
+      <div class="chip on" onclick="setSpec('all',this)">All</div>
+      <div class="chip" onclick="setSpec('General',this)">🏥 General</div>
+      <div class="chip" onclick="setSpec('Eye',this)">👁 Eye</div>
+      <div class="chip" onclick="setSpec('Dental',this)">🦷 Dental</div>
+      <div class="chip" onclick="setSpec('Skin',this)">🩺 Skin</div>
+      <div class="chip" onclick="setSpec('Child',this)">👶 Child</div>
+      <div class="chip" onclick="setSpec('Heart',this)">❤️ Heart</div>
+      <div class="chip" onclick="setSpec('Ortho',this)">🦴 Ortho</div>
+      <div class="chip" onclick="setSpec('Neuro',this)">🧠 Neuro</div>
+      <div class="chip" onclick="setSpec('ENT',this)">👂 ENT</div>
+    </div>
+
+    <div style="display:flex;gap:7px;margin-bottom:12px;flex-wrap:wrap">
+      <div class="chip on" id="so-dist" onclick="sortBy('dist',this)">📍 Nearest</div>
+      <div class="chip" id="so-traf" onclick="sortBy('traffic',this)">🟢 Low Traffic</div>
+      <div class="chip" id="so-wait" onclick="sortBy('wait',this)">⏱ Least Wait</div>
+    </div>
+
+    <div id="hosp-list"></div>
+
+    <div id="hs-sel-btn" style="display:none;position:sticky;bottom:72px;padding:8px 0">
+      <button class="btn btn-blue btn-full btn-lg" onclick="confirmHospital()">Book at this Hospital →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ HOSPITAL DETAIL ══════ -->
+<div class="page" id="pg-hdetail">
+  <div class="wrap">
+    <button class="btn btn-gray btn-sm" onclick="showPage('pg-hospitals')" style="margin-bottom:16px">← Back</button>
+    <div id="hdetail-body"></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn btn-blue" style="flex:1" onclick="startBooking()">🎫 Book Token</button>
+      <button class="btn btn-ghost" style="flex:1" onclick="getDirections()">🗺 Get Directions</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ PAGE: SELECT MEMBER ══════ -->
+<div class="page" id="pg-select-member">
+  <div class="wrap">
+    <div class="steps" id="st-member"></div>
+    <div class="sh">
+      <div class="sh-t">Who is this booking for?</div>
+      <div class="sh-s">Select yourself or a family member</div>
+    </div>
+    <div id="member-list-sel"></div>
+    <div style="margin-top:12px">
+      <button class="btn btn-ghost btn-full" onclick="openAddMember()">+ Add New Family Member</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ PAGE: SYMPTOMS ══════ -->
+<div class="page" id="pg-symptoms">
+  <div class="wrap">
+    <div class="steps" id="st-sym"></div>
+    <div class="sh">
+      <div class="sh-t">Describe Symptoms</div>
+      <div class="sh-s">AI will assess severity and recommend the right specialist</div>
+    </div>
+
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">
+      <button class="chip on" onclick="setLang('en',this)">🇬🇧 English</button>
+      <button class="chip" onclick="setLang('hi',this)">🇮🇳 Hindi</button>
+      <button class="chip" onclick="setLang('kn',this)">🇮🇳 Kannada</button>
+    </div>
+
+    <div class="card">
+      <div class="fg">
+        <label id="sym-label">Describe your symptoms in detail</label>
+        <textarea id="sym-input" rows="4" placeholder="e.g. I have had severe chest pain and breathlessness since morning…"></textarea>
+      </div>
+      <div style="margin-bottom:14px">
+        <div style="font-size:.8rem;font-weight:600;color:var(--gray-500);margin-bottom:8px">Quick select</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap" id="quick-sym"></div>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px">
+        <button class="vbtn" id="vbtn" onclick="toggleVoice()">🎤 <span id="vl">Voice Input</span></button>
+        <span style="font-size:.76rem;color:var(--gray-400)" id="vs"></span>
+      </div>
+      <button class="btn btn-blue btn-full" onclick="analyzeSymptoms()">🤖 Analyze with AI</button>
+    </div>
+
+    <div id="ai-result"></div>
+
+    <div id="proceed-sym" style="display:none;margin-top:12px">
+      <button class="btn btn-green btn-full btn-lg" onclick="generateToken()">Generate Token →</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════ PAGE: TOKEN ══════ -->
+<div class="page" id="pg-token">
+  <div class="wrap">
+    <div class="tok-big">
+      <div class="tok-l">Token Number</div>
+      <div class="tok-n" id="tok-num">—</div>
+      <div class="tok-l" id="tok-pri-lbl" style="margin-top:5px">—</div>
+    </div>
+    <div class="sg">
+      <div class="sb"><div class="sv" id="tok-pos">—</div><div class="sl">Position</div></div>
+      <div class="sb"><div class="sv" id="tok-ahd">—</div><div class="sl">Ahead</div></div>
+      <div class="sb"><div class="sv" id="tok-wt">—</div><div class="sl">Wait (min)</div></div>
+    </div>
+    <div class="card">
+      <div class="ir"><span class="il">👤 Patient</span><span class="iv" id="tok-pat">—</span></div>
+      <div class="ir"><span class="il">🏥 Hospital</span><span class="iv" id="tok-hosp">—</span></div>
+      <div class="ir"><span class="il">🩺 Specialist</span><span class="iv" id="tok-spec">—</span></div>
+      <div class="ir"><span class="il">⚡ Priority</span><span class="iv" id="tok-pri">—</span></div>
+      <div class="ir"><span class="il">📅 Booked</span><span class="iv" id="tok-date">—</span></div>
+    </div>
+    <button class="btn btn-blue btn-full" onclick="showPage('pg-arrival')">View Smart Arrival Timing →</button>
+    <button class="btn btn-gray btn-full" style="margin-top:8px" onclick="showPage('pg-bookings')">View All Bookings</button>
+  </div>
+</div>
+
+<!-- ══════ PAGE: ARRIVAL ══════ -->
+<div class="page" id="pg-arrival">
+  <div class="wrap">
+    <div class="sh"><div class="sh-t">Smart Arrival Planner</div><div class="sh-s">Traffic-adjusted departure for Bangalore</div></div>
+    <div class="arr-card">
+      <div style="font-size:.85rem;color:var(--gray-600);margin-bottom:3px">Your wait at hospital</div>
+      <div class="arr-t" id="arr-wait">—</div>
+      <div style="font-size:.8rem;color:var(--gray-500);margin-top:5px">Based on your queue position</div>
+    </div>
+    <div class="card">
+      <div class="ir"><span class="il">📍 Distance</span><span class="iv" id="arr-dist">—</span></div>
+      <div class="ir"><span class="il">🚗 Travel Time (with traffic)</span><span class="iv" id="arr-travel">—</span></div>
+      <div class="ir"><span class="il">🚦 Traffic Level</span><span class="iv" id="arr-traf">—</span></div>
+      <div class="ir"><span class="il">⏰ Leave Home In</span><span class="iv" id="arr-leave" style="color:var(--blue);font-size:1rem">—</span></div>
+      <div class="ir"><span class="il">🕐 Suggested Departure</span><span class="iv" id="arr-clock">—</span></div>
+    </div>
+    <div class="card" style="background:var(--green-l);border:1.5px solid var(--green-m)">
+      <div style="display:flex;gap:13px;align-items:flex-start">
+        <div style="font-size:1.7rem">💡</div>
+        <div>
+          <div style="font-weight:700;margin-bottom:4px">Smart Tip</div>
+          <div style="font-size:.83rem;color:var(--gray-600);line-height:1.6" id="arr-tip">—</div>
+        </div>
+      </div>
+    </div>
+    <button class="btn btn-blue btn-full" onclick="showPage('pg-queue')">📋 Track Live Queue →</button>
+  </div>
+</div>
+
+<!-- ══════ PAGE: MY BOOKINGS ══════ -->
+<div class="page" id="pg-bookings">
+  <div class="wrap">
+    <div class="sh"><div class="sh-t">My Bookings</div><div class="sh-s">All active and past bookings for your family</div></div>
+    <div id="bookings-list"></div>
+    <div style="margin-top:10px">
+      <button class="btn btn-ghost btn-full" onclick="showPage('pg-hospitals')">+ Book New Appointment</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ PAGE: LIVE QUEUE (Patient view) ══════ -->
+<div class="page" id="pg-queue">
+  <div class="wrap">
+    <div class="sh"><div class="sh-t">Live Queue</div><div class="sh-s" id="q-hosp-name">Select a hospital booking to track</div></div>
+
+    <!-- If multiple bookings, show selector -->
+    <div id="q-selector" style="display:none;margin-bottom:14px"></div>
+
+    <div id="q-content">
+      <div class="ns">
+        <div style="font-size:.8rem;opacity:.85;margin-bottom:2px">Now Serving</div>
+        <div class="ns-n" id="ns-num">—</div>
+      </div>
+      <div class="sg">
+        <div class="sb"><div class="sv" id="q-your">—</div><div class="sl">Your Token</div></div>
+        <div class="sb"><div class="sv" id="q-rem">—</div><div class="sl">Remaining</div></div>
+        <div class="sb"><div class="sv" id="q-total">—</div><div class="sl">Total</div></div>
+      </div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:9px">
+          <span style="font-size:.83rem;font-weight:600;color:var(--gray-600)">Progress</span>
+          <span style="font-size:.78rem;color:var(--gray-400)" id="q-pct">—</span>
+        </div>
+        <div class="pw"><div class="pb" id="q-bar" style="width:0%"></div></div>
+      </div>
+      <div class="appr" id="appr" style="display:none">🔔 Your turn is approaching! Head to the hospital now.</div>
+      <div class="card">
+        <div style="font-weight:700;font-size:.9rem;margin-bottom:12px">Queue</div>
+        <div id="q-list"></div>
+      </div>
+    </div>
+
+    <div id="q-empty" style="display:none">
+      <div class="card" style="text-align:center;padding:40px 20px;color:var(--gray-400)">
+        <div style="font-size:3rem;margin-bottom:12px">🎫</div>
+        <div style="font-weight:600;margin-bottom:8px">No Active Booking</div>
+        <div style="font-size:.85rem;margin-bottom:16px">Book a token first to track your queue position.</div>
+        <button class="btn btn-blue btn-sm" onclick="showPage('pg-hospitals')">Find a Hospital</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════ PAGE: ADMIN DASHBOARD (Clinic Head only) ══════ -->
+<div class="page" id="pg-admin">
+  <div class="wrap">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:18px">
+      <div>
+        <div class="sh-t" id="adm-title">Dashboard</div>
+        <div class="sh-s" id="adm-sub">Clinic Head View</div>
+      </div>
+      <button class="btn btn-blue btn-sm" onclick="nextPatient()">▶ Call Next</button>
+    </div>
+
+    <div class="cv-badge">🔐 Verified: You are managing <strong id="adm-verified-name">your hospital</strong> only</div>
+
+    <div class="sg">
+      <div class="sb"><div class="sv" id="adm-total">0</div><div class="sl">Total</div></div>
+      <div class="sb"><div class="sv" id="adm-serving" style="color:var(--green)">—</div><div class="sl">Serving</div></div>
+      <div class="sb"><div class="sv" id="adm-rem" style="color:var(--red)">0</div><div class="sl">Remaining</div></div>
+    </div>
+
+    <!-- Priority stats -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">
+      <div class="sb" style="border-left:4px solid var(--red)"><div class="sv" id="adm-em" style="color:var(--red)">0</div><div class="sl">Emergency</div></div>
+      <div class="sb" style="border-left:4px solid var(--yellow)"><div class="sv" id="adm-mo" style="color:var(--yellow)">0</div><div class="sl">Moderate</div></div>
+      <div class="sb" style="border-left:4px solid var(--green)"><div class="sv" id="adm-no" style="color:var(--green)">0</div><div class="sl">Normal</div></div>
+    </div>
+
+    <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px">
+      <button class="chip on" id="af-all" onclick="adminFilter('all',this)">All</button>
+      <button class="chip" id="af-em"  onclick="adminFilter('emergency',this)">🔴 Emergency</button>
+      <button class="chip" id="af-mo"  onclick="adminFilter('moderate',this)">🟡 Moderate</button>
+      <button class="chip" id="af-no"  onclick="adminFilter('normal',this)">🟢 Normal</button>
+    </div>
+
+    <div class="card" style="padding:0;overflow:hidden">
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th>Token</th>
+            <th>Patient</th>
+            <th>Priority</th>
+            <th>Symptoms</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="adm-tbody"></tbody>
+      </table>
+    </div>
+
+    <details id="done-sec" style="display:none;margin-top:18px">
+      <summary style="font-size:.83rem;color:var(--gray-400);cursor:pointer;padding:8px 0" id="done-sum">Completed (0)</summary>
+      <div class="card" style="padding:0;overflow:hidden;margin-top:8px">
+        <table class="tbl">
+          <thead><tr><th>Token</th><th>Patient</th><th>Priority</th><th>Status</th></tr></thead>
+          <tbody id="done-tbody"></tbody>
+        </table>
+      </div>
+    </details>
+  </div>
+</div>
+
+<!-- ══════ MODALS ══════ -->
+
+<!-- Add Family Member Modal -->
+<div class="mbg hide" id="m-add-member" onclick="closeMBG(event,'m-add-member')">
+  <div class="mbox">
+    <div style="font-family:var(--font-h);font-size:1.1rem;font-weight:700;margin-bottom:16px">👤 Add Family Member</div>
+    <div class="fg">
+      <label>Member Name *</label>
+      <input id="m-mname" type="text" placeholder="Full name"/>
+      <div class="err" id="e-mname">Please enter a name</div>
+    </div>
+    <div class="fg">
+      <label>Age</label>
+      <input id="m-mage" type="number" placeholder="Age" min="0" max="120"/>
+    </div>
+    <div class="fg">
+      <label>Relation</label>
+      <select id="m-mrel">
+        <option value="Self">Self</option>
+        <option value="Spouse">Spouse</option>
+        <option value="Parent">Parent</option>
+        <option value="Child">Child</option>
+        <option value="Sibling">Sibling</option>
+        <option value="Other">Other</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:6px">
+      <button class="btn btn-blue" style="flex:1" onclick="saveMember()">Save Member</button>
+      <button class="btn btn-gray" style="flex:1" onclick="closeModal('m-add-member')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Hospital Detail Modal (for map popup) -->
+<div class="mbg hide" id="m-hdetail" onclick="closeMBG(event,'m-hdetail')">
+  <div class="mbox" id="m-hdetail-body"></div>
+</div>
+
+</div><!-- end #scr-app -->
+
+
+<script>
+/* ═══════════════════════════════════════════════
+   HOSPITAL REGISTRY  (24 real Bangalore hospitals)
+   Each has a unique 6-digit access code for clinic heads
+═══════════════════════════════════════════════ */
+const HOSPITALS=[
+  {id:1, name:"Narayana Health City",           area:"Bommasandra, Hosur Rd",       specs:["General","Heart","Neuro","Ortho"],  lat:12.8399,lng:77.6731,beds:2000,icon:"🏥",rating:4.7,phone:"08067890000",emergency:true,  code:"NH1001"},
+  {id:2, name:"Manipal Hospital (Old Airport)", area:"HAL Old Airport Road",         specs:["General","Heart","Ortho","Neuro"], lat:12.9592,lng:77.6484,beds:600, icon:"🏥",rating:4.6,phone:"08025024444",emergency:true,  code:"MH2002"},
+  {id:3, name:"Apollo Hospital Bannerghatta",   area:"Bannerghatta Rd",              specs:["General","Heart","Ortho","Skin"],   lat:12.8921,lng:77.5958,beds:250, icon:"🏥",rating:4.5,phone:"08026304050",emergency:true,  code:"AH3003"},
+  {id:4, name:"Fortis Hospital",                area:"Cunningham Rd, Vasanth Nagar", specs:["General","Heart","Neuro"],          lat:12.9906,lng:77.5938,beds:400, icon:"🏥",rating:4.4,phone:"08066214444",emergency:true,  code:"FH4004"},
+  {id:5, name:"Sankara Eye Hospital",           area:"Varthur Rd, Marathahalli",     specs:["Eye"],                              lat:12.9533,lng:77.7015,beds:300, icon:"👁",rating:4.8,phone:"08067207000",emergency:false, code:"SE5005"},
+  {id:6, name:"Nayana Eye Care",                area:"Jayanagar 4th Block",           specs:["Eye"],                              lat:12.9249,lng:77.5837,beds:80,  icon:"👁",rating:4.6,phone:"08026572121",emergency:false, code:"NE6006"},
+  {id:7, name:"Smile Dental Care",              area:"Koramangala 5th Block",         specs:["Dental"],                           lat:12.9340,lng:77.6252,beds:20,  icon:"🦷",rating:4.7,phone:"08041234567",emergency:false, code:"SD7007"},
+  {id:8, name:"Dr Agarwal's Eye Hospital",      area:"Rajajinagar",                  specs:["Eye"],                              lat:12.9940,lng:77.5517,beds:100, icon:"👁",rating:4.5,phone:"08023151616",emergency:false, code:"DA8008"},
+  {id:9, name:"Cutis Dermatology Institute",    area:"Malleshwaram",                 specs:["Skin"],                             lat:13.0051,lng:77.5697,beds:40,  icon:"🩺",rating:4.6,phone:"08023569090",emergency:false, code:"CD9009"},
+  {id:10,name:"Indira Gandhi Child Health",     area:"Rajiv Gandhi Nagar",           specs:["Child"],                            lat:12.9716,lng:77.5946,beds:500, icon:"👶",rating:4.5,phone:"08023356657",emergency:true,  code:"IC1010"},
+  {id:11,name:"Vasan Eye Care MG Road",         area:"MG Road",                      specs:["Eye"],                              lat:12.9716,lng:77.6088,beds:60,  icon:"👁",rating:4.3,phone:"08025597971",emergency:false, code:"VE1111"},
+  {id:12,name:"Bangalore Baptist Hospital",     area:"Bellary Road, Hebbal",         specs:["General","Ortho","Neuro"],          lat:13.0363,lng:77.5990,beds:300, icon:"🏥",rating:4.4,phone:"08022026121",emergency:true,  code:"BB1212"},
+  {id:13,name:"Vikram Hospital",                area:"Millers Road, Vasanth Nagar",  specs:["General","Heart","Ortho"],          lat:12.9919,lng:77.5852,beds:200, icon:"🏥",rating:4.3,phone:"08022200900",emergency:true,  code:"VH1313"},
+  {id:14,name:"Columbia Asia Whitefield",       area:"Whitefield",                   specs:["General","Ortho","ENT"],            lat:12.9697,lng:77.7500,beds:200, icon:"🏥",rating:4.4,phone:"08066776677",emergency:true,  code:"CA1414"},
+  {id:15,name:"BGS Gleneagles Global Hospital", area:"Kengeri",                      specs:["General","Heart","Neuro"],          lat:12.9082,lng:77.4892,beds:400, icon:"🏥",rating:4.5,phone:"08066888000",emergency:true,  code:"BG1515"},
+  {id:16,name:"NIMHANS",                        area:"Hosur Road",                   specs:["Neuro"],                            lat:12.9409,lng:77.5947,beds:750, icon:"🧠",rating:4.7,phone:"08046110007",emergency:true,  code:"NI1616"},
+  {id:17,name:"Sparsh Hospital",                area:"Infantry Road",                specs:["Ortho","General"],                  lat:12.9820,lng:77.5984,beds:300, icon:"🦴",rating:4.6,phone:"08049006000",emergency:false, code:"SP1717"},
+  {id:18,name:"ENT Clinic Indiranagar",         area:"Indiranagar 100 Ft Road",      specs:["ENT"],                              lat:12.9716,lng:77.6411,beds:30,  icon:"👂",rating:4.4,phone:"08025212345",emergency:false, code:"EN1818"},
+  {id:19,name:"Rainbow Children's Hospital",    area:"Marathahalli",                 specs:["Child"],                            lat:12.9558,lng:77.6986,beds:180, icon:"👶",rating:4.6,phone:"08066777777",emergency:true,  code:"RC1919"},
+  {id:20,name:"Derma Clinic Jayanagar",         area:"Jayanagar 9th Block",          specs:["Skin"],                             lat:12.9116,lng:77.5832,beds:10,  icon:"🩺",rating:4.3,phone:"08041112345",emergency:false, code:"DJ2020"},
+  {id:21,name:"K.C. General Hospital",          area:"Malleshwaram",                 specs:["General"],                          lat:13.0048,lng:77.5696,beds:800, icon:"🏥",rating:4.0,phone:"08023460840",emergency:true,  code:"KC2121"},
+  {id:22,name:"Wockhardt Hospital",             area:"Rajaji Nagar",                 specs:["Heart","General"],                  lat:12.9970,lng:77.5519,beds:200, icon:"❤️",rating:4.4,phone:"08044566666",emergency:true,  code:"WH2222"},
+  {id:23,name:"Sakra World Hospital",           area:"Devarabeesanahalli, ORR",      specs:["General","Neuro","Heart"],          lat:12.9591,lng:77.7178,beds:350, icon:"🏥",rating:4.6,phone:"08049690000",emergency:true,  code:"SW2323"},
+  {id:24,name:"Aster CMI Hospital",             area:"Hebbal Fly-over",              specs:["General","Heart","Ortho","Neuro"],  lat:13.0363,lng:77.5974,beds:500, icon:"🏥",rating:4.6,phone:"08061267000",emergency:true,  code:"AC2424"}
+];
+
+/* ═══════ BANGALORE TRAFFIC ZONES ═══════ */
+const TRAFFIC_ZONES=[
+  {lat:12.9173,lng:77.6227,level:"high"},  // Silk Board
+  {lat:12.9550,lng:77.6988,level:"high"},  // ORR Marathahalli
+  {lat:12.9716,lng:77.6088,level:"mid"},   // MG Road
+  {lat:13.0363,lng:77.5974,level:"mid"},   // Hebbal
+  {lat:12.9351,lng:77.6245,level:"mid"},   // Koramangala
+  {lat:12.9697,lng:77.7500,level:"low"},   // Whitefield
+  {lat:12.9254,lng:77.5835,level:"low"},   // Jayanagar
+  {lat:12.8921,lng:77.5958,level:"mid"},   // Bannerghatta
+];
+
+/* ═══════ AI SYMPTOM DATABASE ═══════ */
+const SYMPTOM_DB=[
+  {kw:["chest pain","chest pressure","heart attack","palpitation","tightness in chest","left arm pain","jaw pain"],
+   pri:"emergency",spec:"Heart",icon:"🚨",color:"red",
+   msg:"Possible cardiac emergency. DO NOT drive. Call 108 immediately or ask someone to take you to the nearest emergency room. Chew an aspirin if available and not allergic.",
+   urgent:true},
+  {kw:["stroke","face drooping","face drop","arm weakness","can't speak","slurred speech","sudden confusion","loss of balance","worst headache"],
+   pri:"emergency",spec:"Neuro",icon:"🚨",color:"red",
+   msg:"Possible stroke — use FAST test (Face, Arms, Speech, Time). Call 108 now. Every minute of delay causes irreversible brain damage.",
+   urgent:true},
+  {kw:["severe bleeding","unconscious","not breathing","trauma","head injury","accident","deep wound","compound fracture"],
+   pri:"emergency",spec:"General",icon:"🚨",color:"red",
+   msg:"Life-threatening emergency. Call 108 immediately. Apply firm pressure to wounds. Do not move the patient if spine injury is suspected.",
+   urgent:true},
+  {kw:["blurred vision","sudden vision loss","eye pain","eye injury","chemical in eye","flashes","floaters suddenly"],
+   pri:"moderate",spec:"Eye",icon:"⚠️",color:"yellow",
+   msg:"Urgent eye concern. Avoid rubbing or touching the eye. Cover it loosely. Sudden vision loss or chemical exposure requires emergency eye care within 1 hour.",
+   urgent:false},
+  {kw:["difficulty breathing","breathlessness","asthma attack","wheezing severe","can't breathe","blue lips"],
+   pri:"emergency",spec:"General",icon:"🚨",color:"red",
+   msg:"Severe breathing difficulty — call 108 now. Sit upright, stay calm. Use rescue inhaler if prescribed.",
+   urgent:true},
+  {kw:["toothache","tooth pain","gum bleeding","swollen jaw","dental abscess","broken tooth","lost filling"],
+   pri:"normal",spec:"Dental",icon:"🦷",color:"green",
+   msg:"Dental issue detected. Rinse gently with warm salt water. Avoid very hot/cold food. See a dentist within 24 hours. For abscess (swelling/fever), seek urgent care today.",
+   urgent:false},
+  {kw:["skin rash","itching","eczema","psoriasis","acne","hives","urticaria","blisters","skin allergy","dermatitis"],
+   pri:"normal",spec:"Skin",icon:"🩺",color:"green",
+   msg:"Skin condition detected. Avoid scratching. Keep skin clean and moisturised. If rash spreads rapidly or you have throat swelling, seek emergency care immediately.",
+   urgent:false},
+  {kw:["child","baby","infant","toddler","pediatric","children","high fever child","vaccination","kid"],
+   pri:"moderate",spec:"Child",icon:"👶",color:"yellow",
+   msg:"Paediatric concern detected. Children under 3 months with any fever, or any child with fever above 103°F, difficulty breathing or a febrile seizure needs urgent evaluation.",
+   urgent:false},
+  {kw:["ear pain","hearing loss","ear discharge","ringing in ear","tinnitus","vertigo","sore throat","tonsil","adenoid"],
+   pri:"normal",spec:"ENT",icon:"👂",color:"green",
+   msg:"ENT issue. Avoid inserting anything into the ear. If dizziness is severe or sudden hearing loss occurred, see an ENT urgently today.",
+   urgent:false},
+  {kw:["joint pain","bone pain","fracture","sprain","knee pain","back pain","spine","slip disc","shoulder pain","hip pain"],
+   pri:"normal",spec:"Ortho",icon:"🦴",color:"green",
+   msg:"Musculoskeletal issue detected. Rest, ice, and avoid weight-bearing on the injured area. An orthopaedic consultation is recommended. For suspected fractures, go to emergency now.",
+   urgent:false},
+  {kw:["seizure","epilepsy","fits","convulsion","memory loss","severe confusion","sudden severe headache","migraine severe","vision changes","speech problem"],
+   pri:"moderate",spec:"Neuro",icon:"🧠",color:"yellow",
+   msg:"Neurological symptoms detected. If actively seizing, call 108. Protect the person from injury. Do not put anything in mouth. See a neurologist urgently today.",
+   urgent:false},
+  {kw:["high fever","fever above","dengue","malaria","typhoid","chills severe","shaking","severe body pain"],
+   pri:"moderate",spec:"General",icon:"⚠️",color:"yellow",
+   msg:"Moderate-to-high severity detected. Fever above 103°F with chills may indicate serious infection. Visit a general physician or emergency ward today. Stay hydrated.",
+   urgent:false},
+  {kw:["cough","cold","runny nose","sore throat mild","mild fever","headache","body ache","fatigue","nausea","vomiting","diarrhea","stomach ache","mild pain"],
+   pri:"normal",spec:"General",icon:"✅",color:"green",
+   msg:"Common illness detected. Rest well, stay hydrated, and monitor symptoms. See a general physician if symptoms worsen or persist beyond 3 days.",
+   urgent:false},
+];
+</script>
+
+<script>
+/* ═══════════════════════════════════════════════
+   APP STATE  (single source of truth)
+═══════════════════════════════════════════════ */
+let S={
+  role:null,               // 'patient' | 'clinic'
+  user:null,               // {name, phone, age}
+  clinicHospId:null,       // which hospital the clinic head manages
+  location:null,           // {lat, lng}
+  specFilter:'all',
+  sortMode:'dist',
+  selectedHosp:null,       // hospital object currently being booked
+  bookingMember:null,      // family member being booked for
+  aiResult:null,           // result of last symptom analysis
+  bookings:[],             // [{token,hosp,member,pri,spec,symptoms,waitMins,position,ts}]
+  activeBookingIdx:0,      // which booking is shown in queue view
+  queueData:{},            // {hospId: {serving, list:[{token,name,pri,symptoms,status,memberId}], total}}
+  familyMembers:[],        // [{id,name,age,relation}]
+  adminQFilter:'all',
+  lang:'en',
+  map:null,
+  mapMarkers:[],
+  userMapPin:null,
+};
+
+/* persistence keys */
+const K_USER='cp_user', K_FAM='cp_fam', K_BOOKS='cp_books', K_QDATA='cp_qdata';
+
+/* ════════════════════════════════════════════
+   UTILITY
+════════════════════════════════════════════ */
+function haversine(a,b,c,d){
+  const R=6371,dL=(c-a)*Math.PI/180,dN=(d-b)*Math.PI/180;
+  const x=Math.sin(dL/2)**2+Math.cos(a*Math.PI/180)*Math.cos(c*Math.PI/180)*Math.sin(dN/2)**2;
+  return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));
+}
+
+function getTraffic(h){
+  if(!S.location)return 'low';
+  const hr=new Date().getHours();
+  const peak=(hr>=8&&hr<=10)||(hr>=17&&hr<=20);
+  const nearHigh=TRAFFIC_ZONES.filter(z=>z.level==='high').some(z=>haversine(h.lat,h.lng,z.lat,z.lng)<3);
+  if(peak&&nearHigh)return 'high';
+  if(peak||nearHigh)return 'mid';
+  return 'low';
+}
+function trafMult(l){return{low:1,mid:1.5,high:2.2}[l]||1}
+function trafLabel(l){return{low:'🟢 Low',mid:'🟡 Moderate',high:'🔴 Heavy'}[l]}
+
+function travelInfo(h){
+  if(!S.location)return{mins:15,dist:'?',level:'low'};
+  const dist=haversine(S.location.lat,S.location.lng,h.lat,h.lng);
+  const level=getTraffic(h);
+  const mins=Math.round((dist/30)*60*trafMult(level));
+  return{mins,dist:dist.toFixed(1),level};
+}
+
+let _toastT;
+function toast(msg,dur=3000){
+  const el=document.getElementById('toast');
+  el.textContent=msg;el.classList.add('on');
+  clearTimeout(_toastT);_toastT=setTimeout(()=>el.classList.remove('on'),dur);
+}
+
+function showErr(id){const e=document.getElementById(id);if(e)e.classList.add('on')}
+function hideErr(id){const e=document.getElementById(id);if(e)e.classList.remove('on')}
+
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
+
+function saveState(){
+  localStorage.setItem(K_USER,JSON.stringify({role:S.role,user:S.user,clinicHospId:S.clinicHospId}));
+  localStorage.setItem(K_FAM,JSON.stringify(S.familyMembers));
+  localStorage.setItem(K_BOOKS,JSON.stringify(S.bookings));
+  localStorage.setItem(K_QDATA,JSON.stringify(S.queueData));
+}
+
+function loadState(){
+  try{
+    const u=JSON.parse(localStorage.getItem(K_USER)||'null');
+    if(u){S.role=u.role;S.user=u.user;S.clinicHospId=u.clinicHospId;}
+    S.familyMembers=JSON.parse(localStorage.getItem(K_FAM)||'[]');
+    S.bookings=JSON.parse(localStorage.getItem(K_BOOKS)||'[]');
+    const qd=JSON.parse(localStorage.getItem(K_QDATA)||'null');
+    if(qd)S.queueData=qd;
+  }catch(e){console.error(e)}
+}
+
+/* ════════════════════════════════════════════
+   QUEUE SEEDING  (only seed hospitals that have no data yet)
+════════════════════════════════════════════ */
+function ensureQueue(hid){
+  if(S.queueData[hid])return;
+  const total=Math.floor(Math.random()*25)+5;
+  const serving=Math.floor(Math.random()*6)+1;
+  const list=[];
+  const names=['Ravi K.','Priya S.','Mohan R.','Kavitha N.','Arjun D.','Sunita M.','Vikram P.','Lalitha B.','Deepak T.','Meena R.'];
+  const syms=['Chest pain','Fever','Headache','Eye pain','Tooth ache','Skin rash','Joint pain','Cough','Ear pain','Back pain'];
+  const pris=['emergency','moderate','normal','normal','normal'];
+  for(let i=0;i<total;i++){
+    const pri=pris[Math.floor(Math.random()*pris.length)];
+    list.push({
+      token:String(serving+i).padStart(3,'0'),
+      name:names[Math.floor(Math.random()*names.length)],
+      pri,symptoms:syms[Math.floor(Math.random()*syms.length)],
+      status:'waiting',memberId:null
+    });
+  }
+  // Sort seed queue: emergency first
+  list.sort((a,b)=>({emergency:0,moderate:1,normal:2}[a.pri])-({emergency:0,moderate:1,normal:2}[b.pri]));
+  S.queueData[hid]={serving:String(serving).padStart(3,'0'),list,total};
+}
+</script>
+
+<script>
+/* ════════════════════════════════════════════
+   SPLASH
+════════════════════════════════════════════ */
+function dismissSplash(){
+  const sp=document.getElementById('splash');
+  sp.classList.add('out');
+  setTimeout(()=>{sp.style.display='none';bootFromStorage();},800);
+}
+setTimeout(dismissSplash,3500);
+
+function bootFromStorage(){
+  loadState();
+  if(S.user&&S.role){
+    bootApp();
+  } else {
+    populateClinicSelect();
+    show('scr-login');
+  }
+}
+
+/* ════════════════════════════════════════════
+   SCREENS / PAGES
+════════════════════════════════════════════ */
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
+  const s=document.getElementById(id);if(s)s.classList.add('on');
+}
+
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  const pg=document.getElementById(id);if(pg)pg.classList.add('on');
+  ['home','hospitals','bookings','queue','admin'].forEach(n=>{
+    const b=document.getElementById('bn-'+n);
+    if(b)b.classList.toggle('on',id==='pg-'+n||(id==='pg-home-clinic'&&n==='home'));
+  });
+  if(id==='pg-hospitals')initMap();
+  if(id==='pg-admin')renderAdmin();
+  if(id==='pg-queue')renderQueuePage();
+  if(id==='pg-bookings')renderBookings();
+  if(id==='pg-home'||id==='pg-home-clinic')renderHome();
+  window.scrollTo(0,0);
+}
+
+function goHome(){
+  showPage(S.role==='clinic'?'pg-home-clinic':'pg-home');
+}
+
+/* ════════════════════════════════════════════
+   LOGIN
+════════════════════════════════════════════ */
+function switchRole(r){
+  document.getElementById('rtab-p').classList.toggle('on',r==='patient');
+  document.getElementById('rtab-c').classList.toggle('on',r==='clinic');
+  document.getElementById('frm-patient').style.display=r==='patient'?'block':'none';
+  document.getElementById('frm-clinic').style.display=r==='clinic'?'block':'none';
+}
+
+function populateClinicSelect(){
+  const sel=document.getElementById('li-clinic-sel');
+  if(!sel)return;
+  sel.innerHTML='<option value="">— Select your hospital —</option>'+
+    HOSPITALS.map(h=>`<option value="${h.id}">${h.name} (${h.area})</option>`).join('');
+}
+
+function loginPatient(){
+  const name=document.getElementById('li-name').value.trim();
+  const phone=document.getElementById('li-phone').value.trim();
+  let ok=true;
+  if(!name){showErr('e-liname');ok=false;}else hideErr('e-liname');
+  if(!/^\d{10}$/.test(phone)){showErr('e-liphone');ok=false;}else hideErr('e-liphone');
+  if(!ok)return;
+  const age=document.getElementById('li-age').value||'';
+  S.user={name,phone,age};S.role='patient';S.clinicHospId=null;
+  // Auto add self as first family member if not already
+  if(!S.familyMembers.find(m=>m.id==='self')){
+    S.familyMembers.unshift({id:'self',name,age,relation:'Self'});
+  }
+  saveState();bootApp();
+}
+
+function loginClinic(){
+  const hid=parseInt(document.getElementById('li-clinic-sel').value);
+  const code=document.getElementById('li-code').value.trim();
+  let ok=true;
+  if(!hid){showErr('e-liclsel');ok=false;}else hideErr('e-liclsel');
+  const hosp=HOSPITALS.find(h=>h.id===hid);
+  if(!hosp||code!==hosp.code){showErr('e-licode');ok=false;}else hideErr('e-licode');
+  if(!ok)return;
+  S.user={name:hosp.name,phone:hosp.phone};
+  S.role='clinic';S.clinicHospId=hid;
+  ensureQueue(hid);
+  saveState();bootApp();
+}
+
+function logout(){
+  S.role=null;S.user=null;S.clinicHospId=null;S.selectedHosp=null;
+  S.bookings=[];S.familyMembers=[];
+  localStorage.clear();
+  show('scr-login');
+  populateClinicSelect();
+}
+
+/* ════════════════════════════════════════════
+   BOOT APP
+════════════════════════════════════════════ */
+function bootApp(){
+  show('scr-app');
+  document.getElementById('tnav-name').textContent=S.user.name;
+  document.getElementById('tnav-ic').textContent=S.role==='clinic'?'🏥':'🧑';
+
+  if(S.role==='clinic'){
+    // Show only admin nav item, hide patient-specific ones
+    document.getElementById('bn-hospitals').style.display='none';
+    document.getElementById('bn-bookings').style.display='none';
+    document.getElementById('bn-queue').style.display='none';
+    document.getElementById('bn-admin').style.display='flex';
+    const h=HOSPITALS.find(x=>x.id===S.clinicHospId);
+    if(h){
+      document.getElementById('ch-clinic-name').textContent=h.name;
+      document.getElementById('adm-title').textContent=h.name;
+      document.getElementById('adm-sub').textContent=h.area+' — Clinic Head Dashboard';
+      document.getElementById('adm-verified-name').textContent=h.name;
+    }
+    ensureQueue(S.clinicHospId);
+    goHome();
+  } else {
+    document.getElementById('bn-admin').style.display='none';
+    document.getElementById('bn-hospitals').style.display='flex';
+    document.getElementById('bn-bookings').style.display='flex';
+    document.getElementById('bn-queue').style.display='flex';
+    initQuickSymptoms();
+    requestLocation();
+    goHome();
+  }
+  updateBookingDot();
+}
+
+/* ════════════════════════════════════════════
+   LOCATION
+════════════════════════════════════════════ */
+function requestLocation(){
+  if(!navigator.geolocation)return;
+  navigator.geolocation.getCurrentPosition(pos=>{
+    S.location={lat:pos.coords.latitude,lng:pos.coords.longitude};
+    setEl('loc-ico','✅');
+    setEl('loc-title','Location Active');
+    setEl('loc-desc','Hospitals sorted by distance from your position');
+    const b=document.getElementById('loc-btn');if(b)b.style.display='none';
+    setEl('loc-sub','Sorted by distance from your location');
+    toast('📍 Location found. Hospitals sorted by distance.');
+    renderHospitals();
+    if(S.map)updateUserPin();
+  },()=>{toast('Location denied. Showing all hospitals.');renderHospitals();},{enableHighAccuracy:true,timeout:8000});
+}
+
+function openEmergencyMap(){
+  const u=S.location
+    ?`https://www.openstreetmap.org/?mlat=${S.location.lat}&mlon=${S.location.lng}#map=14/${S.location.lat}/${S.location.lng}`
+    :'https://www.openstreetmap.org/#map=13/12.9716/77.5946';
+  window.open(u,'_blank');
+}
+
+function setEl(id,v){const e=document.getElementById(id);if(e)e.textContent=v;}
+</script>
+
+<script>
+/* ════════════════════════════════════════════
+   MAP
+════════════════════════════════════════════ */
+function initMap(){
+  if(S.map){renderMapMarkers();return;}
+  const cen=S.location?[S.location.lat,S.location.lng]:[12.9716,77.5946];
+  S.map=L.map('hosp-map').setView(cen,12);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap',maxZoom:19}).addTo(S.map);
+  renderMapMarkers();
+}
+
+function renderMapMarkers(){
+  if(!S.map)return;
+  S.mapMarkers.forEach(m=>m.remove());S.mapMarkers=[];
+  getFilteredList().forEach(h=>{
+    const tv=travelInfo(h);
+    const sel=S.selectedHosp?.id===h.id;
+    const col=sel?'#2563eb':'#dc2626';
+    const icon=L.divIcon({
+      html:`<div style="background:${col};color:#fff;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 2px 8px rgba(0,0,0,.3);border:2px solid #fff">${h.icon}</div>`,
+      iconSize:[32,32],iconAnchor:[16,16],className:''
+    });
+    const m=L.marker([h.lat,h.lng],{icon}).addTo(S.map);
+    const waiting=S.queueData[h.id]?S.queueData[h.id].list.filter(t=>t.status==='waiting').length:0;
+    m.bindPopup(`<b>${h.name}</b><br><small>${h.area}</small><br>${S.location?tv.dist+' km · '+tv.mins+' min<br>':''}<small>⏳ ${waiting} waiting</small>`,{maxWidth:200});
+    m.on('click',()=>selectHosp(h.id));
+    S.mapMarkers.push(m);
+  });
+  updateUserPin();
+}
+
+function updateUserPin(){
+  if(!S.map||!S.location)return;
+  if(S.userMapPin)S.userMapPin.remove();
+  const icon=L.divIcon({
+    html:`<div style="background:#2563eb;color:#fff;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 2px 12px rgba(37,99,235,.5);border:3px solid #fff">📍</div>`,
+    iconSize:[36,36],iconAnchor:[18,18],className:''
+  });
+  S.userMapPin=L.marker([S.location.lat,S.location.lng],{icon}).addTo(S.map);
+  S.userMapPin.bindPopup('<b>You are here</b>');
+  S.map.setView([S.location.lat,S.location.lng],13);
+}
+
+function getDirections(){
+  if(!S.selectedHosp)return;
+  const h=S.selectedHosp;
+  const u=S.location
+    ?`https://www.google.com/maps/dir/${S.location.lat},${S.location.lng}/${h.lat},${h.lng}`
+    :`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(h.name+' '+h.area+' Bangalore')}`;
+  window.open(u,'_blank');
+}
+
+/* ════════════════════════════════════════════
+   HOSPITAL LIST
+════════════════════════════════════════════ */
+function getFilteredList(){
+  const q=(document.getElementById('hs-search')||{}).value?.toLowerCase()||'';
+  let list=[...HOSPITALS];
+  if(S.specFilter!=='all')list=list.filter(h=>h.specs.includes(S.specFilter));
+  if(q)list=list.filter(h=>h.name.toLowerCase().includes(q)||h.area.toLowerCase().includes(q)||h.specs.some(s=>s.toLowerCase().includes(q)));
+  if(S.location){
+    list.forEach(h=>{
+      const tv=travelInfo(h);
+      h._dist=haversine(S.location.lat,S.location.lng,h.lat,h.lng);
+      h._travel=tv.mins;h._tlevel=tv.level;h._distKm=tv.dist;
+    });
+  }
+  const wc=h=>(S.queueData[h.id]?.list||[]).filter(t=>t.status==='waiting').length;
+  if(S.sortMode==='dist'&&S.location)list.sort((a,b)=>a._dist-b._dist);
+  else if(S.sortMode==='traffic')list.sort((a,b)=>['low','mid','high'].indexOf(a._tlevel||'low')-['low','mid','high'].indexOf(b._tlevel||'low'));
+  else if(S.sortMode==='wait')list.sort((a,b)=>wc(a)-wc(b));
+  return list;
+}
+
+function renderHospitals(){
+  const list=getFilteredList();
+  const c=document.getElementById('hosp-list');if(!c)return;
+  if(!list.length){c.innerHTML='<div style="text-align:center;padding:36px;color:var(--gray-400)">No hospitals match this filter.</div>';return;}
+  c.innerHTML=list.map(h=>{
+    ensureQueue(h.id);
+    const tv=h._travel?{mins:h._travel,dist:h._distKm,level:h._tlevel}:travelInfo(h);
+    const waiting=(S.queueData[h.id]?.list||[]).filter(t=>t.status==='waiting').length;
+    const sel=S.selectedHosp?.id===h.id;
+    return `<div class="hcard${sel?' sel':''}" onclick="selectHosp(${h.id})" id="hc-${h.id}">
+      <div class="hic">${h.icon}</div>
+      <div class="hbody">
+        <div class="hname">${h.name}</div>
+        <div class="hmeta">📍 ${h.area}</div>
+        <div class="hbadges">
+          ${h.specs.slice(0,3).map(s=>`<span class="badge b-blue">${s}</span>`).join('')}
+          ${h.emergency?'<span class="badge b-red">🚨 24/7 ER</span>':''}
+          <span class="badge b-gray">⭐ ${h.rating}</span>
+        </div>
+        <div style="font-size:.73rem;color:var(--gray-500);margin-top:6px">
+          <span class="traf-dot t${tv.level.charAt(0)}"></span>${trafLabel(tv.level)} · ${waiting} waiting
+        </div>
+      </div>
+      <div class="hright">
+        ${S.location?`<div class="hdist">${tv.dist} km</div><div style="font-size:.73rem;color:var(--gray-500)">${tv.mins} min</div>`:''}
+        <div style="font-size:.7rem;color:var(--gray-400)">${h.beds} beds</div>
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('hs-sel-btn').style.display=S.selectedHosp?'block':'none';
+  if(S.map)renderMapMarkers();
+}
+
+function setSpec(s,el){
+  S.specFilter=s;
+  document.querySelectorAll('#spec-chips .chip').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on');renderHospitals();
+}
+
+function sortBy(m,el){
+  S.sortMode=m;
+  document.querySelectorAll('#so-dist,#so-traf,#so-wait').forEach(e=>e.classList.remove('on'));
+  el.classList.add('on');renderHospitals();
+}
+
+function selectHosp(id){
+  S.selectedHosp=HOSPITALS.find(h=>h.id===id)||null;
+  renderHospitals();
+  document.getElementById('hs-sel-btn').style.display=S.selectedHosp?'block':'none';
+}
+
+function confirmHospital(){
+  if(!S.selectedHosp){toast('Please select a hospital first');return;}
+  ensureQueue(S.selectedHosp.id);
+  renderHospDetail(S.selectedHosp);
+  showPage('pg-hdetail');
+}
+
+function renderHospDetail(h){
+  ensureQueue(h.id);
+  const tv=travelInfo(h);
+  const waiting=(S.queueData[h.id]?.list||[]).filter(t=>t.status==='waiting').length;
+  document.getElementById('hdetail-body').innerHTML=`
+    <div style="text-align:center;padding:16px 0 8px">
+      <div style="font-size:3rem">${h.icon}</div>
+      <div style="font-family:var(--font-h);font-size:1.25rem;font-weight:800;margin-top:7px">${h.name}</div>
+      <div style="font-size:.82rem;color:var(--gray-400);margin-top:3px">📍 ${h.area}, Bangalore</div>
+      <div style="display:flex;gap:7px;justify-content:center;flex-wrap:wrap;margin-top:10px">
+        ${h.specs.map(s=>`<span class="badge b-blue">${s}</span>`).join('')}
+        ${h.emergency?'<span class="badge b-red">🚨 Emergency</span>':''}
+      </div>
+    </div>
+    <div class="card" style="margin-top:14px">
+      <div class="ir"><span class="il">📞 Phone</span><span class="iv"><a href="tel:${h.phone}" style="color:var(--blue)">${h.phone}</a></span></div>
+      <div class="ir"><span class="il">🛏 Beds</span><span class="iv">${h.beds}</span></div>
+      <div class="ir"><span class="il">⭐ Rating</span><span class="iv">${h.rating}/5</span></div>
+      ${S.location?`<div class="ir"><span class="il">📍 Distance</span><span class="iv">${tv.dist} km · ${tv.mins} min</span></div>`:''}
+      <div class="ir"><span class="il">🚦 Traffic</span><span class="iv">${trafLabel(tv.level)}</span></div>
+      <div class="ir"><span class="il">⏳ Waiting</span><span class="iv">${waiting} people</span></div>
+    </div>`;
+}
+
+function startBooking(){
+  if(!S.selectedHosp){toast('No hospital selected');return;}
+  renderMemberSelect();
+  showPage('pg-select-member');
+}
+</script>
+
+<script>
+/* ════════════════════════════════════════════
+   FAMILY MEMBERS
+════════════════════════════════════════════ */
+function renderFamListHome(){
+  const c=document.getElementById('fam-list-home');if(!c)return;
+  if(!S.familyMembers.length){
+    c.innerHTML='<div style="font-size:.84rem;color:var(--gray-400);text-align:center;padding:10px">No family members added yet.</div>';
+    return;
+  }
+  c.innerHTML=S.familyMembers.map(m=>`
+    <div class="fmc" style="cursor:default">
+      <div class="fmc-av">${m.name.charAt(0).toUpperCase()}</div>
+      <div style="flex:1">
+        <div style="font-weight:700;font-size:.9rem">${m.name}</div>
+        <div style="font-size:.76rem;color:var(--gray-400)">${m.relation}${m.age?' · Age '+m.age:''}</div>
+      </div>
+      ${m.id!=='self'?`<button class="btn btn-gray btn-sm" onclick="removeMember('${m.id}')">✕</button>`:''}
+    </div>`).join('');
+}
+
+function renderMemberSelect(){
+  renderSteps('st-member',1,['Member','Symptoms','Token','Arrive']);
+  const c=document.getElementById('member-list-sel');if(!c)return;
+  c.innerHTML=S.familyMembers.map(m=>`
+    <div class="fmc${S.bookingMember?.id===m.id?' sel':''}" onclick="selectMember('${m.id}')">
+      <div class="fmc-av">${m.name.charAt(0).toUpperCase()}</div>
+      <div style="flex:1">
+        <div style="font-weight:700;font-size:.9rem">${m.name}</div>
+        <div style="font-size:.76rem;color:var(--gray-400)">${m.relation}${m.age?' · Age '+m.age:''}</div>
+      </div>
+      ${S.bookingMember?.id===m.id?'<span style="font-size:1.2rem">✅</span>':''}
+    </div>`).join('');
+  if(S.bookingMember){
+    if(!document.getElementById('mem-sel-btn')){
+      const b=document.createElement('button');
+      b.id='mem-sel-btn';b.className='btn btn-blue btn-full btn-lg';b.style.marginTop='14px';
+      b.onclick=proceedToSymptoms;b.textContent='Continue with '+S.bookingMember.name+' →';
+      document.getElementById('member-list-sel').parentElement.appendChild(b);
+    } else {
+      document.getElementById('mem-sel-btn').textContent='Continue with '+S.bookingMember.name+' →';
+    }
+  }
+}
+
+function selectMember(id){
+  S.bookingMember=S.familyMembers.find(m=>m.id===id)||null;
+  renderMemberSelect();
+  // Add button if not exists
+  setTimeout(()=>{
+    let btn=document.getElementById('mem-sel-btn');
+    if(!btn&&S.bookingMember){
+      btn=document.createElement('button');
+      btn.id='mem-sel-btn';btn.className='btn btn-blue btn-full btn-lg';btn.style.marginTop='14px';
+      btn.onclick=proceedToSymptoms;
+      const c=document.getElementById('member-list-sel');
+      if(c&&c.parentElement)c.parentElement.appendChild(btn);
+    }
+    if(btn&&S.bookingMember)btn.textContent='Continue with '+S.bookingMember.name+' →';
+  },50);
+}
+
+function proceedToSymptoms(){
+  if(!S.bookingMember){toast('Please select who this booking is for');return;}
+  if(!S.selectedHosp){toast('Please select a hospital first');showPage('pg-hospitals');return;}
+  renderSteps('st-sym',2,['Member','Symptoms','Token','Arrive']);
+  document.getElementById('sym-input').value='';
+  document.getElementById('ai-result').innerHTML='';
+  document.getElementById('proceed-sym').style.display='none';
+  showPage('pg-symptoms');
+}
+
+function openAddMember(){
+  document.getElementById('m-mname').value='';
+  document.getElementById('m-mage').value='';
+  document.getElementById('m-mrel').value='Spouse';
+  hideErr('e-mname');
+  document.getElementById('m-add-member').classList.remove('hide');
+}
+
+function saveMember(){
+  const name=document.getElementById('m-mname').value.trim();
+  if(!name){showErr('e-mname');return;}
+  hideErr('e-mname');
+  const age=document.getElementById('m-mage').value||'';
+  const relation=document.getElementById('m-mrel').value;
+  S.familyMembers.push({id:uid(),name,age,relation});
+  saveState();
+  closeModal('m-add-member');
+  toast('✅ '+name+' added to family');
+  renderFamListHome();
+  renderMemberSelect();
+  setEl('h-fam-count',S.familyMembers.length);
+}
+
+function removeMember(id){
+  S.familyMembers=S.familyMembers.filter(m=>m.id!==id);
+  saveState();renderFamListHome();
+  setEl('h-fam-count',S.familyMembers.length);
+}
+
+/* ════════════════════════════════════════════
+   MODALS
+════════════════════════════════════════════ */
+function closeModal(id){document.getElementById(id).classList.add('hide');}
+function closeMBG(e,id){if(e.target===document.getElementById(id))closeModal(id);}
+
+/* ════════════════════════════════════════════
+   STEPS
+════════════════════════════════════════════ */
+function renderSteps(id,active,labels){
+  const el=document.getElementById(id);if(!el)return;
+  let h='';
+  labels.forEach((l,i)=>{
+    const idx=i+1;
+    const cls=idx<active?'done':idx===active?'act':'';
+    if(i>0)h+=`<div class="sline${idx<=active?' done':''}"></div>`;
+    h+=`<div class="sdot ${cls}" title="${l}">${idx<active?'✓':idx}</div>`;
+  });
+  el.innerHTML=h;
+}
+
+/* ════════════════════════════════════════════
+   HOME
+════════════════════════════════════════════ */
+function renderHome(){
+  if(S.role==='clinic'){
+    const h=HOSPITALS.find(x=>x.id===S.clinicHospId);
+    if(!h)return;
+    ensureQueue(h.id);
+    const qd=S.queueData[h.id];
+    const rem=(qd.list||[]).filter(t=>t.status==='waiting').length;
+    setEl('ch-total',qd.total);
+    setEl('ch-serving',qd.serving);
+    setEl('ch-rem',rem);
+    return;
+  }
+  setEl('h-username',S.user?.name||'Patient');
+  setEl('h-fam-count',S.familyMembers.length);
+  const todayBooks=S.bookings.filter(b=>{
+    const d=new Date(b.ts);const n=new Date();
+    return d.getFullYear()===n.getFullYear()&&d.getMonth()===n.getMonth()&&d.getDate()===n.getDate();
+  });
+  setEl('h-book-count',todayBooks.length);
+  renderFamListHome();
+  // Active booking
+  const active=S.bookings.filter(b=>b.status!=='done');
+  const hAB=document.getElementById('home-active-booking');
+  if(active.length&&hAB){
+    hAB.style.display='block';
+    const b=active[0];
+    document.getElementById('home-booking-summary').innerHTML=`
+      <div class="ir"><span class="il">👤 Patient</span><span class="iv">${b.member.name}</span></div>
+      <div class="ir"><span class="il">🏥 Hospital</span><span class="iv">${b.hosp.name}</span></div>
+      <div class="ir"><span class="il">🎫 Token</span><span class="iv" style="font-family:var(--font-h);font-size:1.1rem;font-weight:800">${b.token}</span></div>
+      <div class="ir"><span class="il">⚡ Priority</span><span class="iv">${priLabel(b.pri)}</span></div>`;
+  } else if(hAB){hAB.style.display='none';}
+  updateBookingDot();
+}
+
+function priLabel(p){return{emergency:'🔴 Emergency',moderate:'🟡 Moderate',normal:'🟢 Normal'}[p]||p}
+
+function updateBookingDot(){
+  const active=S.bookings.filter(b=>b.status!=='done');
+  const dot=document.getElementById('bd-dot');
+  if(dot)dot.style.display=active.length?'block':'none';
+}
+</script>
+
+<script>
+/* ════════════════════════════════════════════
+   SYMPTOM AI
+════════════════════════════════════════════ */
+const QUICK_SYMS=['Chest pain','Headache','High fever','Eye pain','Tooth ache','Skin rash','Joint pain','Ear pain','Cough','Back pain','Blurred vision','Breathlessness','Nausea','Dizziness'];
+
+function initQuickSymptoms(){
+  const el=document.getElementById('quick-sym');if(!el)return;
+  el.innerHTML=QUICK_SYMS.map(s=>`<div class="chip" onclick="addQuickSym('${s}')">${s}</div>`).join('');
+}
+
+function addQuickSym(s){
+  const ta=document.getElementById('sym-input');if(!ta)return;
+  ta.value=(ta.value?ta.value+', ':'')+s;
+}
+
+const LLABELS={
+  en:{label:'Describe symptoms in detail',ph:'e.g. I have severe chest pain and breathlessness since this morning…'},
+  hi:{label:'अपने लक्षण विस्तार से बताएं',ph:'जैसे: मुझे सुबह से तेज सीने में दर्द और सांस लेने में तकलीफ है…'},
+  kn:{label:'ನಿಮ್ಮ ಲಕ್ಷಣಗಳನ್ನು ವಿವರವಾಗಿ ಹೇಳಿ',ph:'ಉದಾ: ನನಗೆ ಬೆಳಿಗ್ಗೆಯಿಂದ ತೀವ್ರ ಎದೆ ನೋವು ಮತ್ತು ಉಸಿರಾಟ ತೊಂದರೆ ಇದೆ…'},
+};
+function setLang(l,el){
+  S.lang=l;
+  document.querySelectorAll('#pg-symptoms .chip').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on');
+  setEl('sym-label',LLABELS[l].label);
+  const ta=document.getElementById('sym-input');if(ta)ta.placeholder=LLABELS[l].ph;
+}
+
+let _rec=null;
+function toggleVoice(){
+  const btn=document.getElementById('vbtn'),lbl=document.getElementById('vl'),st=document.getElementById('vs');
+  if(!('webkitSpeechRecognition'in window||'SpeechRecognition'in window)){toast('Voice input not supported');return;}
+  if(_rec){_rec.stop();_rec=null;btn.classList.remove('rec');lbl.textContent='Voice Input';st.textContent='';return;}
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  _rec=new SR();
+  _rec.lang=S.lang==='hi'?'hi-IN':S.lang==='kn'?'kn-IN':'en-IN';
+  _rec.interimResults=true;_rec.continuous=true;
+  _rec.onstart=()=>{btn.classList.add('rec');lbl.textContent='Listening…';st.textContent='Speak now';};
+  _rec.onresult=e=>{document.getElementById('sym-input').value=Array.from(e.results).map(r=>r[0].transcript).join(' ');};
+  _rec.onend=()=>{btn.classList.remove('rec');lbl.textContent='Voice Input';st.textContent='';_rec=null;};
+  _rec.onerror=()=>{btn.classList.remove('rec');lbl.textContent='Voice Input';st.textContent='Error';_rec=null;};
+  _rec.start();
+}
+
+function analyzeSymptoms(){
+  const text=document.getElementById('sym-input').value.trim().toLowerCase();
+  if(!text){toast('Please describe your symptoms first');return;}
+  const res=document.getElementById('ai-result');
+  res.innerHTML=`<div style="text-align:center;padding:30px"><div class="spinner" style="margin:0 auto 10px"></div><div style="font-size:.85rem;color:var(--gray-400)">AI analyzing symptoms…</div></div>`;
+  document.getElementById('proceed-sym').style.display='none';
+  setTimeout(()=>{
+    let match=null;
+    for(const e of SYMPTOM_DB){if(e.kw.some(k=>text.includes(k))){match=e;break;}}
+    if(!match)match=SYMPTOM_DB[SYMPTOM_DB.length-1];
+    S.aiResult=match;
+    const cmap={red:'var(--red)',yellow:'var(--yellow)',green:'var(--green)'};
+    const bgcls={red:'ai-em',yellow:'ai-md',green:'ai-nm'}[match.color];
+    const title={emergency:'🚨 Emergency — Act Immediately',moderate:'⚠️ Moderate — See a Doctor Today',normal:'✅ Non-Urgent — Schedule a Visit'}[match.pri];
+    let extra='';
+    if(!S.selectedHosp){
+      const rec=HOSPITALS.filter(h=>h.specs.includes(match.spec));
+      if(rec.length){
+        extra=`<div class="card" style="background:var(--purple-l);border:1.5px solid var(--purple-m);margin-top:12px">
+          <div style="font-weight:700;margin-bottom:7px">💡 AI Recommends — <b>${match.spec}</b> Specialist</div>
+          ${rec.slice(0,2).map(h=>`<div style="font-size:.83rem;padding:7px 0;border-bottom:1px solid var(--gray-100)">${h.icon} <b>${h.name}</b> · ${h.area}</div>`).join('')}
+          <button class="btn btn-ghost btn-sm" style="margin-top:10px" onclick="S.specFilter='${match.spec}';showPage('pg-hospitals');renderHospitals()">See All ${match.spec} Hospitals →</button>
+        </div>`;
+      }
+    }
+    res.innerHTML=`<div class="ai-card ${bgcls}">
+      <div style="font-size:2.2rem;margin-bottom:8px">${match.icon}</div>
+      <div style="font-weight:800;font-size:1.05rem;margin-bottom:6px;color:${cmap[match.color]}">${title}</div>
+      <div style="font-size:.86rem;line-height:1.7;color:var(--gray-700)">${match.msg}</div>
+      <div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:12px">
+        <span class="badge b-${match.pri==='emergency'?'red':match.pri==='moderate'?'yellow':'green'}">${priLabel(match.pri)}</span>
+        <span class="badge b-blue">🩺 ${match.spec} Specialist</span>
+      </div>
+      ${match.urgent?`<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><a href="tel:108" class="btn btn-red btn-sm">📞 Call 108 Now</a><button class="btn btn-gray btn-sm" onclick="openEmergencyMap()">🗺 Emergency Map</button></div>`:''}
+    </div>${extra}`;
+    // Only show "Generate Token" for non-emergency if hospital is selected
+    if(!match.urgent&&S.selectedHosp){
+      document.getElementById('proceed-sym').style.display='block';
+    } else if(!match.urgent&&!S.selectedHosp){
+      res.innerHTML+=`<button class="btn btn-blue btn-full" style="margin-top:10px" onclick="showPage('pg-hospitals')">📍 Select a Hospital to Book Token</button>`;
+    }
+  },1200);
+}
+
+function generateToken(){
+  if(!S.selectedHosp||!S.bookingMember||!S.aiResult){
+    // Fallback – set member to self if direct entry from home
+    if(!S.bookingMember&&S.familyMembers.length)S.bookingMember=S.familyMembers[0];
+    if(!S.bookingMember){toast('Please complete booking flow');return;}
+  }
+  const h=S.selectedHosp;
+  ensureQueue(h.id);
+  const qd=S.queueData[h.id];
+  const waiting=qd.list.filter(t=>t.status==='waiting').length;
+  const tokenNum=String(parseInt(qd.serving)+waiting+1).padStart(3,'0');
+  const waitMins=calcWait(waiting+1,S.aiResult.pri,qd.list);
+  const booking={
+    id:uid(),token:tokenNum,hosp:h,member:S.bookingMember,
+    pri:S.aiResult.pri,spec:S.aiResult.spec,
+    symptoms:document.getElementById('sym-input').value.trim(),
+    waitMins,position:waiting+1,ts:Date.now(),status:'active'
+  };
+  S.bookings.push(booking);
+  S.activeBookingIdx=S.bookings.length-1;
+  // Insert into queue sorted by priority
+  qd.list.push({token:tokenNum,name:S.bookingMember.name,pri:S.aiResult.pri,symptoms:booking.symptoms,status:'waiting',memberId:S.bookingMember.id});
+  // Re-sort waiting by priority
+  const waiting2=qd.list.filter(t=>t.status==='waiting').sort((a,b)=>({emergency:0,moderate:1,normal:2}[a.pri])-({emergency:0,moderate:1,normal:2}[b.pri]));
+  const done2=qd.list.filter(t=>t.status==='done');
+  qd.list=[...done2,...waiting2];
+  qd.total++;
+  saveState();
+  renderTokenPage(booking);
+  renderSteps('st-sym',3,['Member','Symptoms','Token','Arrive']);
+  updateBookingDot();
+  showPage('pg-token');
+  toast('🎫 Token '+tokenNum+' booked for '+S.bookingMember.name+'!');
+}
+
+function calcWait(pos,pri,list){
+  // Emergency patients are seen faster; base 7 min per patient
+  const ahead=list.filter(t=>t.status==='waiting').filter((t,i)=>i<pos-1);
+  const emCount=ahead.filter(t=>t.pri==='emergency').length;
+  const moCount=ahead.filter(t=>t.pri==='moderate').length;
+  const noCount=ahead.filter(t=>t.pri==='normal').length;
+  return Math.max(5,emCount*5+moCount*7+noCount*9);
+}
+</script>
+
+<script>
+/* ════════════════════════════════════════════
+   TOKEN PAGE
+════════════════════════════════════════════ */
+function renderTokenPage(b){
+  if(!b&&S.bookings.length)b=S.bookings[S.activeBookingIdx]||S.bookings[S.bookings.length-1];
+  if(!b)return;
+  setEl('tok-num',b.token);
+  setEl('tok-pri-lbl',priLabel(b.pri));
+  setEl('tok-pos',b.position);
+  setEl('tok-ahd',b.position-1);
+  setEl('tok-wt',b.waitMins);
+  setEl('tok-pat',b.member.name+(b.member.relation&&b.member.relation!=='Self'?' ('+b.member.relation+')':''));
+  setEl('tok-hosp',b.hosp.name);
+  setEl('tok-spec',b.spec+' Specialist');
+  setEl('tok-pri',priLabel(b.pri));
+  setEl('tok-date',new Date(b.ts).toLocaleString('en-IN',{dateStyle:'medium',timeStyle:'short'}));
+  renderArrivalPage(b);
+}
+
+/* ════════════════════════════════════════════
+   ARRIVAL PAGE
+════════════════════════════════════════════ */
+function renderArrivalPage(b){
+  if(!b)return;
+  const tv=travelInfo(b.hosp);
+  const leaveIn=Math.max(0,b.waitMins-tv.mins-10);
+  const dep=new Date(Date.now()+leaveIn*60000);
+  const tips={
+    high:'Traffic is heavy right now on Bangalore roads. Leave immediately or earlier than suggested. Use metro or auto where possible to avoid Silk Board / ORR jams.',
+    mid:'Moderate traffic expected. Leave at the suggested time. Use flyover routes where available. Keep buffer for signals.',
+    low:'Traffic is light. Good time to travel. You should reach comfortably on time.'
+  };
+  setEl('arr-wait',b.waitMins+' min');
+  setEl('arr-dist',S.location?tv.dist+' km':'Location not available');
+  setEl('arr-travel',tv.mins+' min (incl. traffic)');
+  setEl('arr-traf',trafLabel(tv.level));
+  setEl('arr-leave',leaveIn<=0?'🚗 Leave now!':'In '+leaveIn+' minutes');
+  setEl('arr-clock',dep.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}));
+  setEl('arr-tip',tips[tv.level]);
+}
+
+/* ════════════════════════════════════════════
+   MY BOOKINGS PAGE
+════════════════════════════════════════════ */
+function renderBookings(){
+  const c=document.getElementById('bookings-list');if(!c)return;
+  if(!S.bookings.length){
+    c.innerHTML=`<div class="card" style="text-align:center;padding:40px 20px;color:var(--gray-400)">
+      <div style="font-size:3rem;margin-bottom:12px">🎫</div>
+      <div style="font-weight:600;margin-bottom:8px">No bookings yet</div>
+      <div style="font-size:.85rem;margin-bottom:16px">Find a hospital and book a token for you or a family member.</div>
+      <button class="btn btn-blue btn-sm" onclick="showPage('pg-hospitals')">Find a Hospital</button>
+    </div>`;
+    return;
+  }
+  c.innerHTML=[...S.bookings].reverse().map((b,ri)=>{
+    const i=S.bookings.length-1-ri;
+    const qd=S.queueData[b.hosp.id];
+    const serving=qd?parseInt(qd.serving):0;
+    const myTok=parseInt(b.token);
+    const ahead=qd?qd.list.filter(t=>t.status==='waiting').findIndex(t=>t.token===b.token):0;
+    const isDone=b.status==='done'||(qd&&myTok<=serving);
+    return `<div class="card" style="${isDone?'opacity:.6':''}border-left:4px solid ${b.pri==='emergency'?'var(--red)':b.pri==='moderate'?'var(--yellow)':'var(--green)'}">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+        <div>
+          <div style="font-family:var(--font-h);font-size:1.4rem;font-weight:900;color:var(--blue)">${b.token}</div>
+          <div style="font-weight:700;font-size:.92rem">${b.hosp.name}</div>
+          <div style="font-size:.78rem;color:var(--gray-400);margin-top:2px">👤 ${b.member.name} · 🩺 ${b.spec}</div>
+        </div>
+        <div style="text-align:right">
+          <span class="badge b-${b.pri==='emergency'?'red':b.pri==='moderate'?'yellow':'green'}">${priLabel(b.pri)}</span>
+          ${isDone?'<div style="font-size:.75rem;color:var(--green);margin-top:4px">✅ Completed</div>':'<div style="font-size:.75rem;color:var(--gray-400);margin-top:4px">⏳ Waiting</div>'}
+        </div>
+      </div>
+      ${!isDone?`<div style="margin-top:12px;display:flex;gap:7px;flex-wrap:wrap">
+        <button class="btn btn-ghost btn-sm" onclick="viewBookingQueue(${i})">📋 Track Queue</button>
+        <button class="btn btn-ghost btn-sm" onclick="viewArrival(${i})">🕐 Arrival Plan</button>
+        <button class="btn btn-gray btn-sm" onclick="cancelBooking(${i})">✕ Cancel</button>
+      </div>`:''}
+      <div style="font-size:.73rem;color:var(--gray-400);margin-top:8px">📅 ${new Date(b.ts).toLocaleString('en-IN',{dateStyle:'medium',timeStyle:'short'})}</div>
+    </div>`;
+  }).join('');
+}
+
+function viewBookingQueue(idx){
+  S.activeBookingIdx=idx;
+  showPage('pg-queue');
+}
+
+function viewArrival(idx){
+  S.activeBookingIdx=idx;
+  renderArrivalPage(S.bookings[idx]);
+  showPage('pg-arrival');
+}
+
+function cancelBooking(idx){
+  const b=S.bookings[idx];
+  if(!b)return;
+  if(!confirm('Cancel booking for '+b.member.name+' at '+b.hosp.name+'?'))return;
+  S.bookings[idx].status='done';
+  // Remove from queue
+  const qd=S.queueData[b.hosp.id];
+  if(qd){const t=qd.list.find(x=>x.token===b.token);if(t)t.status='cancelled';}
+  saveState();renderBookings();updateBookingDot();
+  toast('Booking cancelled');
+}
+
+/* ════════════════════════════════════════════
+   LIVE QUEUE PAGE (Patient view – only their hospital)
+════════════════════════════════════════════ */
+function renderQueuePage(){
+  const active=S.bookings.filter(b=>b.status!=='done');
+  const empty=document.getElementById('q-empty');
+  const content=document.getElementById('q-content');
+  const sel=document.getElementById('q-selector');
+  if(!active.length){
+    if(empty)empty.style.display='block';
+    if(content)content.style.display='none';
+    return;
+  }
+  if(empty)empty.style.display='none';
+  if(content)content.style.display='block';
+
+  // Selector if multiple active bookings
+  if(active.length>1&&sel){
+    sel.style.display='block';
+    sel.innerHTML='<div style="font-size:.82rem;font-weight:600;color:var(--gray-500);margin-bottom:8px">Select booking to track:</div>'+
+      active.map((b,i)=>{
+        const realIdx=S.bookings.indexOf(b);
+        return `<button class="btn btn-sm ${realIdx===S.activeBookingIdx?'btn-blue':'btn-ghost'}" onclick="S.activeBookingIdx=${realIdx};renderQueuePage()" style="margin-right:6px;margin-bottom:6px">${b.token} · ${b.member.name}</button>`;
+      }).join('');
+  } else if(sel){sel.style.display='none';}
+
+  const b=S.bookings[S.activeBookingIdx]||active[0];
+  if(!b)return;
+  const h=b.hosp;
+  ensureQueue(h.id);
+  const qd=S.queueData[h.id];
+  setEl('q-hosp-name',h.name+' — '+h.area);
+
+  const serving=parseInt(qd.serving);
+  const waiting=qd.list.filter(t=>t.status==='waiting');
+  const done=qd.list.filter(t=>t.status==='done');
+  const myEntry=waiting.find(t=>t.token===b.token);
+  const myPos=myEntry?waiting.indexOf(myEntry)+1:0;
+
+  setEl('ns-num',qd.serving);
+  setEl('q-your',b.token);
+  setEl('q-rem',waiting.length);
+  setEl('q-total',qd.total);
+
+  const pct=qd.total>0?Math.round(done.length/qd.total*100):0;
+  setEl('q-pct',pct+'% done');
+  const bar=document.getElementById('q-bar');if(bar)bar.style.width=pct+'%';
+
+  document.getElementById('appr').style.display=myPos>0&&myPos<=3?'block':'none';
+
+  // Queue list — show only this hospital's queue
+  const pc={emergency:'var(--red)',moderate:'var(--yellow)',normal:'var(--green)'};
+  document.getElementById('q-list').innerHTML=waiting.slice(0,25).map(t=>{
+    const isMe=t.token===b.token;
+    return `<div class="qr" style="${isMe?'background:var(--blue-l);border-radius:8px;padding:10px 8px;margin:-2px 0':''}">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-family:var(--font-h);font-weight:800;font-size:1.05rem;color:${isMe?'var(--blue)':'var(--gray-700)'}">${t.token}</span>
+        <span style="font-size:.83rem;color:var(--gray-600)">${t.name}${isMe?'&nbsp;<b style="color:var(--blue)">(You)</b>':''}</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px">
+        <span style="width:8px;height:8px;border-radius:50%;background:${pc[t.pri]};display:inline-block"></span>
+        <span class="badge b-${t.pri==='emergency'?'red':t.pri==='moderate'?'yellow':'green'}" style="font-size:.68rem">${t.pri}</span>
+      </div>
+    </div>`;
+  }).join('')||'<div style="padding:20px;text-align:center;color:var(--gray-400)">Queue is empty.</div>';
+}
+
+// Refresh queue every 20 seconds if on queue page
+setInterval(()=>{
+  if(document.getElementById('pg-queue')?.classList.contains('on'))renderQueuePage();
+},20000);
+</script>
+
+<script>
+/* ════════════════════════════════════════════
+   ADMIN DASHBOARD  (Clinic Head — only their hospital)
+════════════════════════════════════════════ */
+function renderAdmin(){
+  if(S.role!=='clinic')return;
+  const h=HOSPITALS.find(x=>x.id===S.clinicHospId);
+  if(!h)return;
+  ensureQueue(h.id);
+  const qd=S.queueData[h.id];
+
+  let list=qd.list.filter(t=>t.status==='waiting');
+  // AI priority sort: emergency first, then moderate, then normal
+  list.sort((a,b)=>({emergency:0,moderate:1,normal:2}[a.pri])-({emergency:0,moderate:1,normal:2}[b.pri]));
+
+  const emCount=list.filter(t=>t.pri==='emergency').length;
+  const moCount=list.filter(t=>t.pri==='moderate').length;
+  const noCount=list.filter(t=>t.pri==='normal').length;
+
+  // Filter
+  let filtered=list;
+  if(S.adminQFilter!=='all')filtered=list.filter(t=>t.pri===S.adminQFilter);
+
+  const done=qd.list.filter(t=>t.status==='done');
+
+  setEl('adm-total',qd.total);
+  setEl('adm-serving',qd.serving);
+  setEl('adm-rem',list.length);
+  setEl('adm-em',emCount);
+  setEl('adm-mo',moCount);
+  setEl('adm-no',noCount);
+  setEl('ch-total',qd.total);
+  setEl('ch-serving',qd.serving);
+  setEl('ch-rem',list.length);
+
+  document.getElementById('adm-tbody').innerHTML=filtered.map((t,idx)=>`<tr>
+    <td><b style="font-family:var(--font-h)">${t.token}</b></td>
+    <td>
+      <div>${t.name}</div>
+      ${t.memberId?`<div style="font-size:.71rem;color:var(--gray-400)">Family Member</div>`:''}
+    </td>
+    <td><span class="badge b-${t.pri==='emergency'?'red':t.pri==='moderate'?'yellow':'green'}">${priLabel(t.pri)}</span></td>
+    <td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${t.symptoms||''}">${t.symptoms||'—'}</td>
+    <td>
+      <div style="display:flex;gap:5px;flex-wrap:wrap">
+        <button class="btn btn-green btn-sm" onclick="markDone('${t.token}')">✓ Done</button>
+        <button class="btn btn-yw btn-sm" onclick="bumpUp('${t.token}')">↑ Bump</button>
+      </div>
+    </td>
+  </tr>`).join('')||`<tr><td colspan="5" style="text-align:center;color:var(--gray-400);padding:24px">No patients in this category</td></tr>`;
+
+  if(done.length){
+    document.getElementById('done-sec').style.display='block';
+    setEl('done-sum','Completed ('+done.length+')');
+    document.getElementById('done-tbody').innerHTML=done.map(t=>`<tr style="opacity:.5">
+      <td><s>${t.token}</s></td>
+      <td>${t.name}</td>
+      <td><span class="badge b-${t.pri==='emergency'?'red':t.pri==='moderate'?'yellow':'green'}">${priLabel(t.pri)}</span></td>
+      <td>✅ Done</td>
+    </tr>`).join('');
+  }
+}
+
+function adminFilter(f,el){
+  S.adminQFilter=f;
+  document.querySelectorAll('#pg-admin .chip').forEach(c=>c.classList.remove('on'));
+  if(el)el.classList.add('on');
+  renderAdmin();
+}
+
+function nextPatient(){
+  if(S.role!=='clinic')return;
+  const qd=S.queueData[S.clinicHospId];if(!qd)return;
+  // Call next in priority order (emergency first)
+  const waiting=qd.list.filter(t=>t.status==='waiting')
+    .sort((a,b)=>({emergency:0,moderate:1,normal:2}[a.pri])-({emergency:0,moderate:1,normal:2}[b.pri]));
+  if(!waiting.length){toast('✅ No more patients in queue');return;}
+  const next=waiting[0];
+  next.status='done';
+  qd.serving=next.token;
+  // Mark booking as done if belongs to a patient
+  const matchBook=S.bookings.find(b=>b.token===next.token&&b.hosp.id===S.clinicHospId);
+  if(matchBook)matchBook.status='done';
+  saveState();
+  toast('▶ Now serving: '+next.token+' – '+next.name+' ('+next.pri+')');
+  renderAdmin();
+}
+
+function markDone(token){
+  const qd=S.queueData[S.clinicHospId];if(!qd)return;
+  const t=qd.list.find(x=>x.token===token);
+  if(t){t.status='done';qd.serving=token;}
+  const mb=S.bookings.find(b=>b.token===token&&b.hosp.id===S.clinicHospId);
+  if(mb)mb.status='done';
+  saveState();toast('✅ '+token+' marked done');
+  renderAdmin();
+}
+
+function bumpUp(token){
+  const qd=S.queueData[S.clinicHospId];if(!qd)return;
+  const waiting=qd.list.filter(t=>t.status==='waiting');
+  const idx=waiting.findIndex(t=>t.token===token);
+  if(idx<=0){toast('Already at top');return;}
+  [waiting[idx],waiting[idx-1]]=[waiting[idx-1],waiting[idx]];
+  qd.list=[...qd.list.filter(t=>t.status!=='waiting'),...waiting];
+  saveState();toast('↑ '+token+' bumped up');
+  renderAdmin();
+}
+
+/* ════════════════════════════════════════════
+   INIT
+════════════════════════════════════════════ */
+window.addEventListener('load',()=>{
+  loadState();
+  // Populate clinic select on load so it's ready
+  populateClinicSelect();
+});
+</script>
+</body>
+</html>
